@@ -1,10 +1,10 @@
 // Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
-// Date        : Fri Jul 12 18:01:05 2019
-// Host        : DESKTOP-R77VRGM running 64-bit major release  (build 9200)
+// Date        : Fri Jul 12 21:48:33 2019
+// Host        : LAPTOP-S507QT6H running 64-bit major release  (build 9200)
 // Command     : write_verilog -force -mode funcsim
-//               c:/Users/a710128/Desktop/cpu/nw/thinpad_top.srcs/sources_1/ip/blk_mem_gen_0/blk_mem_gen_0_sim_netlist.v
+//               C:/Users/user/Desktop/CPU_Project/thinpad_top.srcs/sources_1/ip/blk_mem_gen_0/blk_mem_gen_0_sim_netlist.v
 // Design      : blk_mem_gen_0
 // Purpose     : This verilog netlist is a functional simulation representation of the design and should not be modified
 //               or synthesized. This netlist cannot be used for SDF annotated simulation.

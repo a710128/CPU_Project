@@ -382,7 +382,7 @@ assign mmu_addr_wire = mmu_ifmem ? ex_mem_o_res : if_imaddr;
 assign if_imdata = mmu_out_data;
 assign mem_wb_i_memread = mmu_out_data;
 assign mmu_in_data = ex_mem_o_memwrite;
-wire[11:0]  rom_addr;
+wire[9:0]  rom_addr;
 wire        rom_ce;
 wire[31:0]  rom_data;
 
@@ -405,6 +405,17 @@ MMU mmu_instance(
     .tlb_write_entry(ex_tlb_write_entry),
     .tlb_miss(tlb_status),
     
+
+    // flash
+    .flash_d(flash_d),      //Flash数据
+    .flash_a(flash_a),      //Flash地址，a0仅在8bit模式有效，16bit模式无意义
+    .flash_rp_n(flash_rp_n),         //Flash复位信号，低有效
+    .flash_vpen(flash_vpen),         //Flash写保护信号，低电平时不能擦除、烧写
+    .flash_ce_n(flash_ce_n),         //Flash片选信号，低有效
+    .flash_oe_n(flash_oe_n),         //Flash读使能信号，低有效
+    .flash_we_n(flash_we_n),         //Flash写使能信号，低有效
+    .flash_byte_n(flash_byte_n),       //Flash 8bit模式选择，低有效。在使用flash的16位模式时请设为1
+
     // base_ram
     .base_ram_data(base_ram_data),
     .base_ram_addr(base_ram_addr),

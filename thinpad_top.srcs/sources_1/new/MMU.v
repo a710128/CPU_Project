@@ -30,11 +30,21 @@ module MMU(
     output wire ext_ram_ce_n,
     output wire ext_ram_oe_n,
     output wire ext_ram_we_n,
+
+    // flash
+    inout  wire [15:0]flash_d,      //Flash数据
+    output wire [22:0]flash_a,      //Flash地址，a0仅在8bit模式有效，16bit模式无意义
+    output wire flash_rp_n,         //Flash复位信号，低有效
+    output wire flash_vpen,         //Flash写保护信号，低电平时不能擦除、烧写
+    output wire flash_ce_n,         //Flash片选信号，低有效
+    output wire flash_oe_n,         //Flash读使能信号，低有效
+    output wire flash_we_n,         //Flash写使能信号，低有效
+    output wire flash_byte_n,       //Flash 8bit模式选择，低有效。在使用flash的16位模式时请设为1
     
     // on-chip rom
     input wire[31:0]    rom_data,
     output reg          rom_ce,
-    output reg[11:0]    rom_addr,
+    output reg[9:0]    rom_addr,
     
     output wire uart_rdn,
     output wire uart_wrn,
@@ -123,6 +133,17 @@ assign ext_ram_oe_n = oe2;
 assign ext_ram_we_n = we2;
 assign ext_ram_be_n = be;
 
+
+reg flash_rp_n1 = 1'b1; reg flash_ce_n1 = 1'b1; reg flash_oe_n1 = 1'b1;
+reg flash_byte_n1 = 1'b1; reg flash_we_n1 = 1'b1; reg flash_a1 = 23'b0;
+assign flash_rp_n = flash_rp_n1;
+assign flash_ce_n = flash_ce_n1;
+assign flash_oe_n = flash_oe_n1;
+assign flash_byte_n = flash_byte_n1;
+assign flash_we_n = flash_we_n1;
+assign flash_a = flash_a1;
+
+
 assign uart_wrn     = wrn;
 assign uart_rdn     = rdn;
 
@@ -143,6 +164,12 @@ always @(*) begin
         we2 <= 1'b1;
         
         rom_ce <= 0;
+        // flash_a <= 23'b0;
+        flash_rp_n1 <= 1'b1;
+        flash_ce_n1 <= 1'b1;
+        flash_oe_n1 <= 1'b1;
+        flash_byte_n1 <= 1'b1;
+        flash_we_n1 <= 1'b1;
         
         if (addr[31:16] == 16'h1FD0) begin
             ce1 <= 1'b1;
@@ -155,7 +182,7 @@ always @(*) begin
             16'h0400, 16'h0408: begin
                 // LED & DPY % vga
             end
-            16'h03F8: begin
+            16'h03F8: begin // 串口
                 if (if_read) begin
                     rdn <= 1'b0;
                     wrn <= 1'b1;
@@ -167,7 +194,7 @@ always @(*) begin
                     ram_write_data <= input_data;
                 end
             end
-            16'h03FC: begin
+            16'h03FC: begin //串口
                 rdn <= 1'b1;
                 wrn <= 1'b1;
                 if (if_read) begin
@@ -226,10 +253,18 @@ always @(*) begin
             end
         end
         else if (addr[31:24] == 8'h1E ) begin   // FLASH
+            flash_a1 <= addr[23:1];     //Flash地址，a0仅在8bit模式有效，16bit模式无意义
+            flash_rp_n1 <= 1'b1;         //Flash复位信号，低有效
+            // flash_vpen <= 1'b0;         //Flash写保护信号，低电平时不能擦除、烧写
+            flash_ce_n1 <= 1'b0;         //Flash片选信号，低有效
+            flash_oe_n1 <= 1'b0;         //Flash读使能信号，低有效
+            flash_we_n1 <= 1'b1;         //Flash写使能信号，低有效
+            flash_byte_n1 <= 1'b1;
+            output_data <= {16'b0, flash_d};
         end
         else if (addr[31:12] == 20'h1FC00) begin // on-chip ROM
             rom_ce <= 1;
-            rom_addr <= addr[11:2];
+            rom_addr <= addr[13:2];
             output_data <= rom_data;
         end
         else if (addr[31:12] == 20'h1FC03) begin // char-VGA
