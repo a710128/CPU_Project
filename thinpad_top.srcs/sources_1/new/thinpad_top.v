@@ -247,7 +247,7 @@ reg [4:0] ex_mem_o_regwrite, ex_mem_o_loadbyte;
 wire[31:0] ex_mem_i_res, ex_mem_i_memwrite;
 reg [31:0] ex_mem_o_res, ex_mem_o_memwrite;
 
-wire[5:0] ex_ip = {3'b000, uart_dataready, 2'b00};
+wire[4:0] ex_ip = {3'b00, uart_dataready, 2'b00};
 wire[65:0] tlb_status;
 wire[31:0] ex_tlb_rollback_pc_i;
 wire ex_tlb_write;
@@ -276,7 +276,7 @@ EX ex_instance(
     
     // ex
     .if_dealing_ex(ex_ex_o_exc),
-    .ip_7_2(ex_ip),
+    .ip_6_2(ex_ip),
     
     // multiplier
     .mpresult(MPresult),
@@ -376,7 +376,7 @@ end
 // MMU MUX
 wire mmu_ifmem = (ex_mem_o_ifmemread | ex_mem_o_ifmemwrite) & ~ex_ex_o_exc;
 wire[4:0] mmu_bytemode = mmu_ifmem ? ex_mem_o_loadbyte : 5'b01111;
-assign mmu_read_wire = mmu_ifmem ? ex_mem_o_ifmemread : 1'b1;
+assign mmu_read_wire = mmu_ifmem ? ex_mem_o_ifmemread : ~ex_if_ifpcjump;          // 如果当前要跳转则不读取
 assign mmu_write_wire = mmu_ifmem ? ex_mem_o_ifmemwrite : 1'b0;
 assign mmu_addr_wire = mmu_ifmem ? ex_mem_o_res : if_imaddr;
 assign if_imdata = mmu_out_data;

@@ -16,7 +16,7 @@ module EX(
     
     //ex
     input wire if_dealing_ex,
-    input wire[5:0] ip_7_2,
+    input wire[4:0] ip_6_2,
     
     // multiplier
     input wire[63:0] mpresult,
@@ -82,6 +82,7 @@ parameter PAGEMASK = 5;     // PageMask
 parameter BVA = 8;          // BadVAddr
 parameter COUNT = 9;        // Counter
 parameter ENTRYHI = 10;     // EntryHi
+parameter COMPARE = 11;     // Compare
 parameter STATUS = 12;      // SR
 parameter CAUSE = 13;       // Cause
 parameter EPC = 14;         // EPC
@@ -101,6 +102,9 @@ wire[32:0] ext_sub = ext_data_a - ext_data_b;
 wire[32:0] ext_addsimm = ext_data_a + ext_simm;
 
 reg intq;
+reg timer_int;
+
+wire[5:0] ip_7_2 = { timer_int, ip_6_2 };
 
 always @(*) begin
     // passes
@@ -792,6 +796,11 @@ always@(posedge clk or negedge rst) begin
             && cp0[STATUS][12] == 1 // IM4 = 1
             && cp0[STATUS][1] == 0; // EXL = normal
     end 
+    else if (ip_7_2[5] == 1'b1) begin // IP7 = 1
+        intq <= cp0[STATUS][0] == 1 // IE = 1
+            && cp0[STATUS][15] == 1 // IM7 = 1
+            && cp0[STATUS][1] == 0; // EXL = normal
+    end
     else begin
         intq <= 0;
     end
@@ -807,9 +816,9 @@ always@(posedge clk or negedge rst) begin
         cp0[6] <= 32'b0;
         cp0[7] <= 32'b0;
         cp0[8] <= 32'b0;
-        cp0[9] <= 32'b0;
-        cp0[10] <= 32'b0;
-        cp0[11] <= 32'b0;
+        cp0[9] <= 32'b0;    // count
+        cp0[10] <= 32'b0;   
+        cp0[11] <= 32'b0;   // compare
         cp0[12] <= 32'b0; // status
         cp0[13] <= 32'h00000001; // cause
         cp0[14] <= 32'b0; // epc
@@ -830,8 +839,9 @@ always@(posedge clk or negedge rst) begin
         cp0[29] <= 32'b0;
         cp0[30] <= 32'b0;
         cp0[31] <= 32'b0;
+        timer_int <= 1'b0;
     end
-    else begin
+    else begin 
         if (exception) begin
             cp0[CAUSE][15:10] <= ip_7_2;
             cp0[CAUSE][6:2] <= ex_cause; // cause: ExcCode
@@ -851,25 +861,40 @@ always@(posedge clk or negedge rst) begin
             else if (ex_cause == 5'd2)
                 cp0[BVA] <= tlb_status[31:0]; // BVA
         end
-        else case (op)
-        6'b000000:
-            case (func)
-            6'b010001: hi <= data_a;
-            6'b010011: lo <= data_a;
-            6'b011001: begin
-                hi <= mpresult[63:32];
-                lo <= mpresult[31:0];
+        else begin
+            case (op)
+            6'b000000:
+                case (func)
+                6'b010001: hi <= data_a;
+                6'b010011: lo <= data_a;
+                6'b011001: begin
+                    hi <= mpresult[63:32];
+                    lo <= mpresult[31:0];
+                end
+                endcase
+            6'b010000: begin
+                if (jpc[25:21] == 5'b00100) begin // MTC0
+                    cp0[jpc[15:11]] <= data_b;
+                end
+                else if (func == 6'b011000) begin// ERET
+                    cp0[STATUS][1] <= 0; // status:EXL
+                end
             end
             endcase
-        6'b010000: begin
-            if (jpc[25:21] == 5'b00100) begin
-                cp0[jpc[15:11]] <= data_b;
+            
+            if ((op == 6'b010000) && (jpc[25:21] == 5'b00100) && (jpc[15:11] == 5'd9)) begin // set cp0[COUNT]
+                timer_int <= (data_b >= cp0[COMPARE]);
             end
-            else if (func == 6'b011000) begin// ERET
-                cp0[STATUS][1] <= 0; // status:EXL
+            else begin
+                if (cp0[COUNT] < cp0[COMPARE]) begin
+                    timer_int <= 1'b0;
+                    cp0[COUNT] <= cp0[COUNT] + 1;
+                end
+                else begin
+                    timer_int <= 1'b1;
+                end
             end
         end
-        endcase
         
         last_ds <= delay_slot | delay_slot_n;
     end
