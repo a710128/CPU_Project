@@ -376,7 +376,7 @@ end
 // MMU MUX
 wire mmu_ifmem = (ex_mem_o_ifmemread | ex_mem_o_ifmemwrite) & ~ex_ex_o_exc;
 wire[4:0] mmu_bytemode = mmu_ifmem ? ex_mem_o_loadbyte : 5'b01111;
-assign mmu_read_wire = mmu_ifmem ? ex_mem_o_ifmemread : 1'b1;          // 如果当前要跳转则不访存
+assign mmu_read_wire = mmu_ifmem ? ex_mem_o_ifmemread : 1'b1;
 assign mmu_write_wire = mmu_ifmem ? ex_mem_o_ifmemwrite : 1'b0;
 assign mmu_addr_wire = mmu_ifmem ? ex_mem_o_res : if_imaddr;
 assign if_imdata = mmu_out_data;

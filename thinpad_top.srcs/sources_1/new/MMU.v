@@ -258,55 +258,55 @@ reg [63:0] chr_signal_input2;
 always@(posedge clk) begin
     if (if_write) begin
         case (addr)
-            32'hBFD00400: leds <= input_data[15:0];
-            32'hBFD00408: dpys <= input_data[7:0];
+            32'h1FD00400: leds <= input_data[15:0];
+            32'h1FD00408: dpys <= input_data[7:0];
             
-            32'hBFD02000: begin
+            32'h1FD02000: begin
                 chr_signal_input1[63:56] <= input_data[7:0];
             end
-            32'hBFD02001: begin
+            32'h1FD02001: begin
                 chr_signal_input1[55:48] <= input_data[7:0];
             end
-            32'hBFD02002: begin
+            32'h1FD02002: begin
                 chr_signal_input1[47:40] <= input_data[7:0];
             end
-            32'hBFD02003: begin
+            32'h1FD02003: begin
                 chr_signal_input1[39:32] <= input_data[7:0];
             end
-            32'hBFD02004: begin
+            32'h1FD02004: begin
                 chr_signal_input1[31:24] <= input_data[7:0];
             end
-            32'hBFD02005: begin
+            32'h1FD02005: begin
                 chr_signal_input1[23:16] <= input_data[7:0];
             end
-            32'hBFD02006: begin
+            32'h1FD02006: begin
                 chr_signal_input1[15:8] <= input_data[7:0];
             end
-            32'hBFD02007: begin
+            32'h1FD02007: begin
                 chr_signal_input1[7:0] <= input_data[7:0];
             end
-            32'hBFD02010: begin
+            32'h1FD02010: begin
                 chr_signal_input2[63:56] <= input_data[7:0];
             end
-            32'hBFD02011: begin
+            32'h1FD02011: begin
                 chr_signal_input2[55:48] <= input_data[7:0];
             end
-            32'hBFD02012: begin
+            32'h1FD02012: begin
                 chr_signal_input2[47:40] <= input_data[7:0];
             end
-            32'hBFD02013: begin
+            32'h1FD02013: begin
                 chr_signal_input2[39:32] <= input_data[7:0];
             end
-            32'hBFD02014: begin
+            32'h1FD02014: begin
                 chr_signal_input2[31:24] <= input_data[7:0];
             end
-            32'hBFD02015: begin
+            32'h1FD02015: begin
                 chr_signal_input2[23:16] <= input_data[7:0];
             end
-            32'hBFD02016: begin
+            32'h1FD02016: begin
                 chr_signal_input2[15:8] <= input_data[7:0];
             end
-            32'hBFD02017: begin
+            32'h1FD02017: begin
                 chr_signal_input2[7:0] <= input_data[7:0];
             end
         endcase
