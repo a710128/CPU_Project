@@ -23,10 +23,11 @@ module EX(
     
     //TLB
     input wire[65:0]    tlb_status, // { is_IF, is_miss, rollback-epc, bva }
-    output reg[31:0]   tlb_rollback_pc,
-    output reg         tlb_write,
-    output reg[3:0]    tlb_write_idx,
-    output reg[95:0]   tlb_write_entry,
+    output reg[31:0]    tlb_rollback_pc,
+    output reg          tlb_write,
+    output reg[3:0]     tlb_write_idx,
+    output reg[95:0]    tlb_write_entry,
+    output reg[7:0]     current_asid,
         
     output reg[31:0] result,
     output reg[31:0] mem_data,
@@ -993,8 +994,8 @@ always@(posedge clk or negedge rst) begin
             end
         end
         
-        cp0[RANDOM] = {28'b0, cp0[RANDOM][3:0] + 1};
-        
+        cp0[RANDOM] <= {28'b0, cp0[RANDOM][3:0] + 1};
+        current_asid <= cp0[ENTRYHI][7:0];
         last_ds <= delay_slot | delay_slot_n;
     end
 end

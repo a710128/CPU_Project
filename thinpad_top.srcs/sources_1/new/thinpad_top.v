@@ -257,6 +257,7 @@ wire[95:0] ex_tlb_write_entry;
 wire tlbp_query, tlbr_query;
 wire[4:0] tlb_query_idx;
 wire[95:0] tlb_query_entry;
+wire[7:0] current_asid;
 
 EX ex_instance(
     .clk(clk),
@@ -290,6 +291,7 @@ EX ex_instance(
     .tlb_rollback_pc(ex_tlb_rollback_pc_i),
     .tlb_write(ex_tlb_write),
     .tlb_write_idx(ex_tlb_write_idx),
+    .current_asid(current_asid),
     .tlb_write_entry(ex_tlb_write_entry),
         
     // foobar
@@ -413,6 +415,7 @@ MMU mmu_instance(
     .tlb_write(ex_tlb_write),
     .tlb_write_idx(ex_tlb_write_idx),
     .tlb_write_entry(ex_tlb_write_entry),
+    .current_asid(current_asid),
     .tlb_miss(tlb_status),
     
     // base_ram

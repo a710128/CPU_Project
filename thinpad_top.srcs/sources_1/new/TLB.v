@@ -30,6 +30,8 @@ module TLB(
     input wire[3:0] tlb_index,
     input wire[95:0] tlb_entry,
     
+    input wire[7:0] current_asid,
+    
     output reg[25:0] tlb_pfn,
     output reg tlb_miss,
     
@@ -59,6 +61,8 @@ generate
             .wrt_entry(tlb_entry),
             .pfn(pfns[i]),
             .miss(entry_miss[i]),
+            
+            .current_asid(current_asid),
             
             .tlbp_query(tlbp_query),
             .tlbp_match(tlbp_match[i]),

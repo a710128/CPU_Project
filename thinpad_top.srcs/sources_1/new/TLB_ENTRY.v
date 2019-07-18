@@ -28,6 +28,8 @@ module TLB_ENTRY(
     input wire write,
     input wire[95:0] wrt_entry,
     
+    input wire[7:0] current_asid,
+    
     output reg[25:0] pfn,
     output reg miss,
     
@@ -40,9 +42,9 @@ reg[31:0] Hi, L0, L1;
 
 always @(*) begin
     if (ce) begin
-        if (addr[19:1] == Hi[31:13]) begin
+        if (addr[19:1] == Hi[31:13] && ((Hi[7:0] == current_asid) || L0[0])) begin
             pfn <= (addr[0] == 0) ? L0[31:6] : L1[31:6]; 
-            miss <= (addr[0] == 0) ? ~L0[1] : ~L1[1];     // Valid
+            miss <= (addr[0] == 0) ? !L0[1] : !L1[1];     // Valid
         end
         else begin
             pfn <= 26'b0;
@@ -61,7 +63,7 @@ end
 
 always @(*) begin
     if (tlbp_query) begin
-        tlbp_match <= (wrt_entry[95:77] == Hi[31:13]);
+        tlbp_match <= (wrt_entry[95:77] == Hi[31:13] && ((wrt_entry[71:64] == Hi[7:0]) || L0[0])); // VPN && (asid || G)
     end
     else begin
         tlbp_match <= 1'b0;

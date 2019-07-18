@@ -11,6 +11,7 @@ module MMU(
     input wire tlb_write,
     input wire[3:0] tlb_write_idx,
     input wire[95:0] tlb_write_entry,
+    input wire[7:0] current_asid,
     output wire[65:0]  tlb_miss, // { is_IF, is_miss, epc, BVA}
     
     input wire[31:0] input_data,
@@ -84,6 +85,8 @@ TLB J_TLB (
     .tlb_write(tlb_write),
     .tlb_index(tlb_write_idx),
     .tlb_entry(tlb_write_entry),
+    
+    .current_asid(current_asid),
     
     .tlb_pfn(tlb_paddr),
     .tlb_miss(tlb_miss[64]),
