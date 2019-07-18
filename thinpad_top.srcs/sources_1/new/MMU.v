@@ -176,7 +176,7 @@ always @(*) begin
             end
             endcase
         end
-        else if (addr[31:16] <= 16'h000F) begin // RAM
+        else if (addr[31:16] < 16'h0080) begin // RAM
             ram_write_data <= 32'h00000000;
             // RAM
             ce1 <= addr[22];
