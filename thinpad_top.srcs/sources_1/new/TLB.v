@@ -31,13 +31,22 @@ module TLB(
     input wire[95:0] tlb_entry,
     
     output reg[25:0] tlb_pfn,
-    output reg tlb_miss
+    output reg tlb_miss,
+    
+    // TLBP. TLBR
+    input wire tlbp_query,
+    input wire tlbr_query,
+    output reg[4:0] tlb_query_idx,
+    output reg[95:0] tlb_query_entry
 );
 parameter TLB_SIZE = 16; 
 
 wire[25:0] pfns[TLB_SIZE - 1: 0];
 wire[TLB_SIZE - 1: 0] entry_miss;
 
+
+wire[TLB_SIZE - 1: 0] tlbp_match;
+wire[95:0] tlb_entries[TLB_SIZE - 1: 0];
 generate
     genvar i;
     for (i = 0; i < TLB_SIZE; i = i + 1)
@@ -49,7 +58,11 @@ generate
             .write(tlb_write && (tlb_index == i)),
             .wrt_entry(tlb_entry),
             .pfn(pfns[i]),
-            .miss(entry_miss[i])
+            .miss(entry_miss[i]),
+            
+            .tlbp_query(tlbp_query),
+            .tlbp_match(tlbp_match[i]),
+            .tlb_query_entry(tlb_entries[i])
         );
     end
 endgenerate
@@ -98,6 +111,36 @@ always @(*) begin
         tlb_miss <= 0;
     end
 end
+
+always @(*) begin
+    if (tlbp_query) begin
+        tlb_query_idx <= 5'd16;
+        if (tlbp_match[15]) tlb_query_idx <= 5'd15;
+        if (tlbp_match[14]) tlb_query_idx <= 5'd14;
+        if (tlbp_match[13]) tlb_query_idx <= 5'd13;
+        if (tlbp_match[12]) tlb_query_idx <= 5'd12;
+        if (tlbp_match[11]) tlb_query_idx <= 5'd11;
+        if (tlbp_match[10]) tlb_query_idx <= 5'd10;
+        if (tlbp_match[09]) tlb_query_idx <= 5'd9;
+        if (tlbp_match[08]) tlb_query_idx <= 5'd8;
+        if (tlbp_match[07]) tlb_query_idx <= 5'd7;
+        if (tlbp_match[06]) tlb_query_idx <= 5'd6;
+        if (tlbp_match[05]) tlb_query_idx <= 5'd5;
+        if (tlbp_match[04]) tlb_query_idx <= 5'd4;
+        if (tlbp_match[03]) tlb_query_idx <= 5'd3;
+        if (tlbp_match[02]) tlb_query_idx <= 5'd2;
+        if (tlbp_match[01]) tlb_query_idx <= 5'd1;
+        if (tlbp_match[00]) tlb_query_idx <= 5'd0;
+    end
+    else tlb_query_idx <= 5'd16;
+end
+
+always @(*) begin
+    if (tlbr_query) begin
+        tlb_query_entry <= tlb_entries[tlb_index];
+    end
+end
+
 
 endmodule
 

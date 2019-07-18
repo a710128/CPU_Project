@@ -57,7 +57,13 @@ module MMU(
     output wire video_hsync,       //行同步（水平同步）信号
     output wire video_vsync,       //场同步（垂直同步）信号
     output wire video_clk,         //像素时钟输出
-    output wire video_de           //行数据有效信号，用于区分消隐区
+    output wire video_de,           //行数据有效信号，用于区分消隐区
+    
+    // TLBP. TLBR
+    input wire tlbp_query,
+    input wire tlbr_query,
+    output wire[4:0] tlb_query_idx,
+    output wire[95:0] tlb_query_entry
     );
 
 reg tlb_enabled;
@@ -80,7 +86,12 @@ TLB J_TLB (
     .tlb_entry(tlb_write_entry),
     
     .tlb_pfn(tlb_paddr),
-    .tlb_miss(tlb_miss[64])
+    .tlb_miss(tlb_miss[64]),
+    
+    .tlbp_query(tlbp_query),
+    .tlbr_query(tlbr_query),
+    .tlb_query_idx(tlb_query_idx),
+    .tlb_query_entry(tlb_query_entry)
 );
 
 always @(*) begin

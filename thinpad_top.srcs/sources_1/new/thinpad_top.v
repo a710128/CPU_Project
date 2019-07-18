@@ -254,6 +254,10 @@ wire ex_tlb_write;
 wire[3:0] ex_tlb_write_idx;
 wire[95:0] ex_tlb_write_entry;
 
+wire tlbp_query, tlbr_query;
+wire[4:0] tlb_query_idx;
+wire[95:0] tlb_query_entry;
+
 EX ex_instance(
     .clk(clk),
     .rst(rst),
@@ -307,7 +311,13 @@ EX ex_instance(
     .if_reg_write_o(ex_mem_i_ifregwrite),
     .if_mem_read_o(ex_mem_i_ifmemread),
     .if_mem_write_o(ex_mem_i_ifmemwrite),
-    .data_write_reg_o(ex_mem_i_regwrite)
+    .data_write_reg_o(ex_mem_i_regwrite),
+    
+    // TLBP, TLBR
+    .tlbp_query(tlbp_query),
+    .tlbr_query(tlbr_query),
+    .tlb_query_idx(tlb_query_idx),
+    .tlb_query_entry(tlb_query_entry)
 );
 
 // EX/MEM registers
@@ -447,7 +457,13 @@ MMU mmu_instance(
     // on-chip rom
     .rom_addr(rom_addr),
     .rom_data(rom_data),
-    .rom_ce(rom_ce)
+    .rom_ce(rom_ce),
+    
+    // TLBP, TLBR
+    .tlbp_query(tlbp_query),
+    .tlbr_query(tlbr_query),
+    .tlb_query_idx(tlb_query_idx),
+    .tlb_query_entry(tlb_query_entry)
 );
 
 blk_mem_gen_0 onchiprom (

@@ -29,7 +29,11 @@ module TLB_ENTRY(
     input wire[95:0] wrt_entry,
     
     output reg[25:0] pfn,
-    output reg miss 
+    output reg miss,
+    
+    input wire tlbp_query,
+    output reg tlbp_match,
+    output reg[95:0] tlb_query_entry
 );
 
 reg[31:0] Hi, L0, L1;
@@ -48,6 +52,19 @@ always @(*) begin
     else begin
         pfn <= 26'b0;
         miss <= 0;
+    end
+end
+
+always @(*) begin
+    tlb_query_entry <= {Hi, L0, L1};
+end
+
+always @(*) begin
+    if (tlbp_query) begin
+        tlbp_match <= (wrt_entry[95:77] == Hi[31:13]);
+    end
+    else begin
+        tlbp_match <= 1'b0;
     end
 end
 

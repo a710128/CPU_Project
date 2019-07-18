@@ -51,8 +51,13 @@ module EX(
     input wire if_mem_write_i,
     output reg if_mem_write_o,
     input wire[4:0] data_write_reg_i,
-    output reg[4:0] data_write_reg_o
+    output reg[4:0] data_write_reg_o,
     
+    // TLBP. TLBR
+    input wire[4:0] tlb_query_idx,
+    input wire[95:0] tlb_query_entry,
+    output reg tlbp_query,
+    output reg tlbr_query
     );
 
 wire[3:0] ffclo[0:31];
@@ -76,6 +81,7 @@ wire delay_slot_n = if_b_njump;
 parameter EX_ADDR_INC = 12'h180;
 
 parameter INDEX = 0;        // Index
+parameter RANDOM = 1;       // Random
 parameter ENTRYL0 = 2;      // EntryLo0
 parameter ENTRYL1 = 3;      // EntryLo1
 parameter PAGEMASK = 5;     // PageMask
@@ -129,6 +135,9 @@ always @(*) begin
     tlb_rollback_pc <= npc - (last_ds ?  32'd8 : 32'd4);
     
     tlb_write <= 1'b0;
+    
+    tlbp_query <= 1'b0;
+    tlbr_query <= 1'b0;
     
     // ALU
     if (intq) begin
@@ -495,6 +504,37 @@ always @(*) begin
                 tlb_write <= 1'b1;
                 tlb_write_idx <= cp0[INDEX]; 
                 tlb_write_entry <= { cp0[ENTRYHI], cp0[ENTRYL0], cp0[ENTRYL1] };
+                
+                bubble_cnt <= bubble_cnt_dec;
+                ex_stopcnt <= ex_stopcnt_dec;
+                if_pc_jump <= 1'b0;
+                if_forward_reg_write <= 1'b0;
+            end
+            else if (jpc == 26'b10000000000000000000000110) begin
+                // TLBWR
+                tlb_write <= 1'b1;
+                tlb_write_idx <= cp0[RANDOM]; 
+                tlb_write_entry <= { cp0[ENTRYHI], cp0[ENTRYL0], cp0[ENTRYL1] };
+                
+                bubble_cnt <= bubble_cnt_dec;
+                ex_stopcnt <= ex_stopcnt_dec;
+                if_pc_jump <= 1'b0;
+                if_forward_reg_write <= 1'b0;
+            end
+            else if (jpc == 26'b10000000000000000000001000) begin
+                // TLBP
+                tlbp_query <= 1'b1;
+                tlb_write_entry <= { cp0[ENTRYHI], cp0[ENTRYL0], cp0[ENTRYL1] };
+                
+                bubble_cnt <= bubble_cnt_dec;
+                ex_stopcnt <= ex_stopcnt_dec;
+                if_pc_jump <= 1'b0;
+                if_forward_reg_write <= 1'b0;
+            end
+            else if (jpc == 26'b10000000000000000000000001) begin
+                // TLBR
+                tlbr_query <= 1'b1;
+                tlb_write_idx <= cp0[INDEX];
                 
                 bubble_cnt <= bubble_cnt_dec;
                 ex_stopcnt <= ex_stopcnt_dec;
@@ -926,6 +966,16 @@ always@(posedge clk or negedge rst) begin
                 else if (func == 6'b011000) begin// ERET
                     cp0[STATUS][1] <= 0; // status:EXL
                 end
+                else if (jpc == 26'b10000000000000000000001000) begin
+                    // TLBP
+                    cp0[INDEX] <= {tlb_query_idx[4], 27'b0, tlb_query_idx[3:0]};
+                end
+                else if (jpc == 26'b10000000000000000000000001) begin
+                    // TLBR
+                    cp0[ENTRYHI] <= tlb_query_entry[95:64];
+                    cp0[ENTRYL0] <= tlb_query_entry[63:32];
+                    cp0[ENTRYL1] <= tlb_query_entry[31: 0];
+                end
             end
             endcase
             
@@ -942,6 +992,8 @@ always@(posedge clk or negedge rst) begin
                 end
             end
         end
+        
+        cp0[RANDOM] = {28'b0, cp0[RANDOM][3:0] + 1};
         
         last_ds <= delay_slot | delay_slot_n;
     end
