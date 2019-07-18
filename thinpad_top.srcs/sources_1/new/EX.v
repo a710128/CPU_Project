@@ -147,7 +147,7 @@ always @(*) begin
         if_forward_reg_write <= 1'b0;
         if_pc_jump <= 1'b1;
         exception <= 1'b1;  // force jump
-        pc_jumpto <= EX_ADDR_INIT;
+        pc_jumpto <= cp0[EBASE];    // TLB refill exception handle, at CP0[EBASE]
     end
     else case (op)
     6'b000000: begin
@@ -738,6 +738,29 @@ always @(*) begin
         end
     end
     
+    6'b100001, 6'b100101: begin
+        // LH LHU
+        if (sl_addr[0] == 1'b0) begin
+            load_byte <= {op[2], sl_addr[1], sl_addr[1], ~sl_addr[1], ~sl_addr[1]};
+            result <= sl_addr;
+            bubble_cnt <= ex_stop ? bubble_cnt_dec : 3'b001; // IF/ID/EX stop
+            ex_stopcnt <= ex_stop ? ex_stopcnt_dec : 3'b001; // R/W conflict
+            if_pc_jump <= 1'b0;
+            if_forward_reg_write <= 1'b0;
+        end
+        else begin
+            // exception 读取非对齐
+            ex_cause <= ~ex_stop ? 5'd4 : 5'd0;
+            bad_addr <= sl_addr;
+            bubble_cnt <= bubble_cnt_dec;
+            ex_stopcnt <= ex_stop ? ex_stopcnt_dec : 3'b010;
+            if_forward_reg_write <= 1'b0;
+            if_pc_jump <= ~ex_stop;
+            exception <= ~ex_stop;
+            pc_jumpto <= EX_ADDR_INIT;
+        end
+    end
+    
     6'b100000, 6'b100100: begin
         // LB LBU
         load_byte <= {op[2],
@@ -757,6 +780,30 @@ always @(*) begin
             mem_data <= data_b; // write mem
             bubble_cnt <= ex_stop ? bubble_cnt_dec : 3'b001; // IF/ID/EX stop
             ex_stopcnt <= ex_stop ? ex_stopcnt_dec : 3'b001;
+            if_pc_jump <= 1'b0;
+            if_forward_reg_write <= 1'b0;
+        end
+        else begin
+            // exception 写入非对齐
+            ex_cause <= ~ex_stop ? 5'd5 : 5'd0;
+            bad_addr <= sl_addr;
+            bubble_cnt <= bubble_cnt_dec;
+            ex_stopcnt <= ex_stop ? ex_stopcnt_dec : 3'b010;
+            if_forward_reg_write <= 1'b0;
+            if_pc_jump <= ~ex_stop;
+            exception <= ~ex_stop;
+            pc_jumpto <= EX_ADDR_INIT;
+        end
+    end
+    
+    6'b101001: begin
+        // SH
+        if (sl_addr[0] == 1'b0) begin
+            load_byte <= {1'b0, sl_addr[1], sl_addr[1], ~sl_addr[1], ~sl_addr[1]};
+            result <= sl_addr;
+            mem_data <= data_b; // write mem
+            bubble_cnt <= ex_stop ? bubble_cnt_dec : (sl_addr == 32'hBFD003F8 ? 3'b111 : 3'b001); // IF/ID/EX stop
+            ex_stopcnt <= ex_stop ? ex_stopcnt_dec : (sl_addr == 32'hBFD003F8 ? 3'b111 : 3'b001); // R/W conflict
             if_pc_jump <= 1'b0;
             if_forward_reg_write <= 1'b0;
         end
