@@ -217,7 +217,7 @@ always@(posedge clk or negedge rst) begin
         ex_ex_o_exc <= ex_ex_i_exc;
     
         if (!ex_reg_bubble) begin
-            id_ex_exstop <= (~ex_ex_i_delayslot | ex_ex_i_exc) & (ex_ex_i_stopcnt != 0);
+            id_ex_exstop <= (~ex_ex_i_delayslot | ex_ex_i_exc | ex_ex_last_eret) & (ex_ex_i_stopcnt != 0);
             id_ex_o_npc <= id_ex_i_npc;
             id_ex_o_ifregwrite <= id_ex_i_ifregwrite;
             id_ex_o_ifmemread <= id_ex_i_ifmemread;
@@ -258,6 +258,7 @@ wire tlbp_query, tlbr_query;
 wire[4:0] tlb_query_idx;
 wire[95:0] tlb_query_entry;
 wire[7:0] current_asid;
+wire ex_ex_last_eret;
 
 EX ex_instance(
     .clk(clk),
@@ -278,6 +279,8 @@ EX ex_instance(
     .if_mem_read_i(id_ex_o_ifmemread),
     .if_mem_write_i(id_ex_o_ifmemwrite),
     .data_write_reg_i(id_ex_o_regwrite),
+    
+    .last_eret(ex_ex_last_eret),
     
     // ex
     .if_dealing_ex(ex_ex_o_exc),

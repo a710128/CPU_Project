@@ -40,9 +40,12 @@ module TLB_ENTRY(
 
 reg[31:0] Hi, L0, L1;
 
+wire is_glob;
+assign is_glob = L0[1] ? L0[0] : L1[0];
+
 always @(*) begin
     if (ce) begin
-        if (addr[19:1] == Hi[31:13] && ((Hi[7:0] == current_asid) || L0[0])) begin
+        if (addr[19:1] == Hi[31:13] && ((Hi[7:0] == current_asid) || is_glob)) begin
             pfn <= (addr[0] == 0) ? L0[31:6] : L1[31:6]; 
             miss <= (addr[0] == 0) ? !L0[1] : !L1[1];     // Valid
         end

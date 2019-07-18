@@ -14,6 +14,8 @@ module EX(
     input wire[31:0] npc,
     input wire[25:0] jpc,
     
+    output reg last_eret,
+    
     //ex
     input wire if_dealing_ex,
     input wire[4:0] ip_6_2,
@@ -139,6 +141,8 @@ always @(*) begin
     
     tlbp_query <= 1'b0;
     tlbr_query <= 1'b0;
+    
+    last_eret <= 1'b0;
     
     // ALU
     if (intq) begin
@@ -499,6 +503,8 @@ always @(*) begin
                 if_forward_reg_write <= 1'b0;
                 if_pc_jump <= ~ex_stop;
                 pc_jumpto <= {cp0[EPC][31:2], 2'b00}; // <<2
+                
+                last_eret <= 1'b1;
             end
             else if (jpc == 26'b10000000000000000000000010) begin
                 // TLBWI
@@ -949,7 +955,7 @@ always@(posedge clk or negedge rst) begin
             else if (ex_cause == 5'd2)
                 cp0[BVA] <= tlb_status[31:0]; // BVA
         end
-        else begin
+        else if(~ex_stop) begin
             case (op)
             6'b000000:
                 case (func)
