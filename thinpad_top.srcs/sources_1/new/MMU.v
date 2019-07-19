@@ -1,5 +1,6 @@
 module MMU(
     input wire clk,
+    input wire rst,
     
     input wire if_read,
     input wire if_write,
@@ -79,6 +80,7 @@ assign tlb_miss[65] = is_IF;
 
 TLB J_TLB (
     .clk(clk),
+    .rst(rst),
     .tlb_query(tlb_enabled),
     .tlb_query_vpn(vaddr[31:12]),
     

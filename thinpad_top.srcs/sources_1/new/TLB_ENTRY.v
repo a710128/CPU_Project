@@ -21,6 +21,7 @@
 
 module TLB_ENTRY(
     input wire clk,
+    input wire rst,
     
     input wire      ce,
     input wire[19:0] addr,
@@ -66,15 +67,20 @@ end
 
 always @(*) begin
     if (tlbp_query) begin
-        tlbp_match <= (wrt_entry[95:77] == Hi[31:13] && ((wrt_entry[71:64] == Hi[7:0]) || L0[0])); // VPN && (asid || G)
+        tlbp_match <= (wrt_entry[95:77] == Hi[31:13] && ((wrt_entry[71:64] == Hi[7:0]) || is_glob)); // VPN && (asid || G)
     end
     else begin
         tlbp_match <= 1'b0;
     end
 end
 
-always @(posedge clk) begin
-    if (write) begin
+always @(posedge clk or negedge rst) begin
+    if (!rst) begin
+        Hi <= 32'b0;
+        L0 <= 32'b0;
+        L1 <= 32'b0;
+    end
+    else if (write) begin
         Hi <= wrt_entry[95:64];
         L0 <= wrt_entry[63:32];
         L1 <= wrt_entry[31:0];
