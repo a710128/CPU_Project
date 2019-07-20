@@ -22,6 +22,7 @@
 
 module TLB(
     input wire clk,
+    input wire rst,
     
     input wire tlb_query,
     input wire[19:0] tlb_query_vpn,
@@ -55,6 +56,8 @@ generate
     begin:TLB_ENTRY_LABEL
         TLB_ENTRY tlb_entry_inst (
             .clk(clk),
+            .rst(rst),
+            
             .ce(tlb_query),
             .addr(tlb_query_vpn),
             .write(tlb_write && (tlb_index == i)),
@@ -79,10 +82,10 @@ generate
     for (i = 0; i < 4; i = i + 1)
     begin: TLB_SELECTOR_LV0
         ENTRY_SELECTOR selector_lv0 (
-            .inp0(pfns[i + 0]),
-            .inp1(pfns[i + 1]),
-            .inp2(pfns[i + 2]),
-            .inp3(pfns[i + 3]),
+            .inp0(pfns[i * 4 + 0]),
+            .inp1(pfns[i * 4 + 1]),
+            .inp2(pfns[i * 4 + 2]),
+            .inp3(pfns[i * 4 + 3]),
             .sel(entry_miss[i * 4 + 3: i * 4]),
             
             .oup(pfns_lv1[i]),

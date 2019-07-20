@@ -188,6 +188,7 @@ ID id_instance(
 );
 
 reg id_ex_exstop = 1'b1;
+wire ex_ex_last_eret;
 assign ex_if_bubble = (ex_ex_i_bubblecnt != 0);
 assign ex_reg_bubble = (ex_ex_i_bubblecnt != 0);
 
@@ -258,7 +259,7 @@ wire tlbp_query, tlbr_query;
 wire[4:0] tlb_query_idx;
 wire[95:0] tlb_query_entry;
 wire[7:0] current_asid;
-wire ex_ex_last_eret;
+
 
 EX ex_instance(
     .clk(clk),
@@ -404,6 +405,8 @@ wire[31:0]  rom_data;
 // MMU
 MMU mmu_instance(
     .clk(clk),
+    .rst(rst),
+    
     .if_read(mmu_read_wire),
     .if_write(mmu_write_wire),
     .vaddr(mmu_addr_wire),
