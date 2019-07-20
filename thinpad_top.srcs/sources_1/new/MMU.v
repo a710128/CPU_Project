@@ -65,17 +65,17 @@ module MMU(
     input wire tlbp_query,
     input wire tlbr_query,
     output wire[4:0] tlb_query_idx,
-    output wire[95:0] tlb_query_entry
+    output wire[95:0] tlb_query_entry,
 
     // flash
-//    inout  wire [15:0]flash_d,      //Flash数据
-//    output wire [22:0]flash_a,      //Flash地址，a0仅在8bit模式有效，16bit模式无意义
-//    output wire flash_rp_n,         //Flash复位信号，低有效
-//    output wire flash_vpen,         //Flash写保护信号，低电平时不能擦除、烧写
-//    output wire flash_ce_n,         //Flash片选信号，低有效
-//    output wire flash_oe_n,         //Flash读使能信号，低有效
-//    output wire flash_we_n,         //Flash写使能信号，低有效
-//    output wire flash_byte_n      //Flash 8bit模式选择，低有效。在使用flash的16位模式时请设为1
+    inout  wire [15:0]flash_d,      //Flash数据
+    output wire [22:0]flash_a,      //Flash地址，a0仅在8bit模式有效，16bit模式无意义
+    output wire flash_rp_n,         //Flash复位信号，低有效
+    output wire flash_vpen,         //Flash写保护信号，低电平时不能擦除、烧写
+    output wire flash_ce_n,         //Flash片选信号，低有效
+    output wire flash_oe_n,         //Flash读使能信号，低有效
+    output wire flash_we_n,         //Flash写使能信号，低有效
+    output wire flash_byte_n      //Flash 8bit模式选择，低有效。在使用flash的16位模式时请设为1
     );
 
 reg tlb_enabled;
@@ -131,6 +131,7 @@ reg oe1 = 1'b1, we1 = 1'b1, ce1 = 1'b1;
 reg oe2 = 1'b1, we2 = 1'b1, ce2 = 1'b1;
 wire[3:0] be = ~bytemode[3:0];
 reg[31:0] ram_write_data = 32'h00000000;
+reg[15:0] flash_d_write = 16'h0000;
 reg wrn = 1'b1, rdn = 1'b1;
 
 assign base_ram_addr = addr[21:2];
@@ -138,6 +139,9 @@ assign ext_ram_addr  = addr[21:2];
 
 assign base_ram_data = if_write ? ram_write_data : 32'bz;
 assign ext_ram_data  = if_write ? ram_write_data : 32'bz;
+assign flash_d = if_write ? flash_d_write : 32'bz;
+
+assign flash_vpen = 1'b1;
 
 assign base_ram_ce_n = ce1;
 assign base_ram_oe_n = oe1;
@@ -178,6 +182,12 @@ always @(*) begin
         we2 <= 1'b1;
         
         rom_ce <= 0;
+        
+        // flash_rp_n1 <= 1'b1;
+        flash_ce_n1 <= 1'b1;
+        flash_oe_n1 <= 1'b1;
+        flash_we_n1 <= 1'b1;
+        flash_byte_n1 <= 1'b1;
         
         if (addr[31:16] == 16'h1FD0) begin
             ce1 <= 1'b1;
@@ -261,14 +271,49 @@ always @(*) begin
             end
         end
         else if (addr[31:24] == 8'h1E ) begin   // FLASH
-//            flash_a1 <= addr[23:1];     //Flash地址，a0仅在8bit模式有效，16bit模式无意义
-//            flash_rp_n1 <= 1'b1;         //Flash复位信号，低有效
-//            // flash_vpen <= 1'b0;         //Flash写保护信号，低电平时不能擦除、烧写
-//            flash_ce_n1 <= 1'b0;         //Flash片选信号，低有效
-//            flash_oe_n1 <= 1'b0;         //Flash读使能信号，低有效
-//            flash_we_n1 <= 1'b1;         //Flash写使能信号，低有效
-//            flash_byte_n1 <= 1'b1;
-//            output_data <= {16'b0, flash_d};
+            flash_a1 <= addr[23:1];     //Flash地址，a0仅在8bit模式有效，16bit模式无意义
+            flash_ce_n1 <= 1'b0;         //Flash片选信号，低有效           
+            
+            if (if_read) begin
+                flash_oe_n1 <= 1'b0;
+                case (bytemode)
+                    5'b01000: output_data <= 32'b0;
+                    5'b11000: output_data <= 32'b0;
+                    5'b00100: output_data <= 32'b0;
+                    5'b10100: output_data <= 32'b0;
+                    5'b00010: output_data <= {{24{flash_d[15]}}, flash_d[15:8]};
+                    5'b10010: output_data <= {24'h000000, flash_d[15:8]};
+                    5'b00001: output_data <= {{24{flash_d[7]}}, flash_d[7:0]};
+                    5'b10001: output_data <= {24'h000000, flash_d[7:0]};
+                    
+                    5'b01100: output_data <= 32'b0;
+                    5'b11100: output_data <= 32'b0;
+                    5'b00011: output_data <= {{16{flash_d[15]}}, flash_d[15:0]};
+                    5'b10011: output_data <= {16'h0000, flash_d[15:0]};
+                    
+                    default: output_data <= {16'h0000, flash_d};
+                endcase
+            end
+            else if (if_write) begin
+                flash_we_n1 <= 1'b0;
+                output_data <= 32'h00000000;
+                case (bytemode[3:0])
+                    4'b1000: flash_d_write <= 16'h0000;
+                    4'b0100: flash_d_write <= 16'h0000;
+                    4'b0010: flash_d_write <= {input_data[7:0], 8'h00};
+                    4'b0001: flash_d_write <= {8'h000000, input_data[7:0]};
+                    
+                    4'b1100: flash_d_write <= 16'h0000;
+                    4'b0011: flash_d_write <= input_data[15:0];
+                    
+                    default: flash_d_write <= input_data[15:0];
+                endcase
+            end
+            else begin
+                output_data <= 32'h00000000;
+                flash_d_write <= 32'h00000000;
+            end
+            
         end
         else if (addr[31:12] == 20'h1FC00) begin // on-chip ROM
             rom_ce <= 1;
