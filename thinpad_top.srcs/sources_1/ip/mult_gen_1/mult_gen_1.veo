@@ -1,7 +1,4 @@
-
-// file: pll_example.v
-// 
-// (c) Copyright 2008 - 2013 Xilinx, Inc. All rights reserved.
+// (c) Copyright 1995-2019 Xilinx, Inc. All rights reserved.
 // 
 // This file contains confidential and proprietary information
 // of Xilinx, Inc. and is protected under U.S. and
@@ -47,47 +44,25 @@
 // THIS COPYRIGHT NOTICE AND DISCLAIMER MUST BE RETAINED AS
 // PART OF THIS FILE AT ALL TIMES.
 // 
-//----------------------------------------------------------------------------
-// User entered comments
-//----------------------------------------------------------------------------
-// None
-//
-//----------------------------------------------------------------------------
-//  Output     Output      Phase    Duty Cycle   Pk-to-Pk     Phase
-//   Clock     Freq (MHz)  (degrees)    (%)     Jitter (ps)  Error (ps)
-//----------------------------------------------------------------------------
-// clk_out1___100.000______0.000______50.0______186.330____144.334
-// clk_out2____10.000______0.000______20.0______309.743____144.334
-//
-//----------------------------------------------------------------------------
-// Input Clock   Freq (MHz)    Input Jitter (UI)
-//----------------------------------------------------------------------------
-// __primary______________50____________0.010
+// DO NOT MODIFY THIS FILE.
 
-`timescale 1ps/1ps
+// IP VLNV: xilinx.com:ip:mult_gen:12.0
+// IP Revision: 14
 
-(* CORE_GENERATION_INFO = "pll_example,clk_wiz_v6_0_2_0_0,{component_name=pll_example,use_phase_alignment=true,use_min_o_jitter=false,use_max_i_jitter=false,use_dyn_phase_shift=false,use_inclk_switchover=false,use_dyn_reconfig=false,enable_axi=0,feedback_source=FDBK_AUTO,PRIMITIVE=MMCM,num_out_clk=2,clkin1_period=20.000,clkin2_period=10.0,use_power_down=false,use_reset=false,use_locked=true,use_inclk_stopped=false,feedback_type=SINGLE,CLOCK_MGR_TYPE=NA,manual_override=false}" *)
+// The following must be inserted into your Verilog file for this
+// core to be instantiated. Change the instance name and port connections
+// (in parentheses) to your own signal names.
 
-module pll_example 
- (
-  // Clock out ports
-  output        clk_out1,
-  output        clk_out2,
-  // Status and control signals
-  output        locked,
- // Clock in ports
-  input         clk_in1
- );
+//----------- Begin Cut here for INSTANTIATION Template ---// INST_TAG
+mult_gen_1 your_instance_name (
+  .CLK(CLK),  // input wire CLK
+  .A(A),      // input wire [31 : 0] A
+  .B(B),      // input wire [31 : 0] B
+  .P(P)      // output wire [63 : 0] P
+);
+// INST_TAG_END ------ End INSTANTIATION Template ---------
 
-  pll_example_clk_wiz inst
-  (
-  // Clock out ports  
-  .clk_out1(clk_out1),
-  .clk_out2(clk_out2),
-  // Status and control signals               
-  .locked(locked),
- // Clock in ports
-  .clk_in1(clk_in1)
-  );
+// You must compile the wrapper file mult_gen_1.v when simulating
+// the core, mult_gen_1. When compiling the wrapper file, be sure to
+// reference the Verilog simulation library.
 
-endmodule

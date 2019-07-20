@@ -21,10 +21,12 @@ module EX(
     input wire[4:0] ip_6_2,
     
     // multiplier
-    input wire[63:0] mpresult,
+    input wire[63:0] mpresultu,
+    input wire[63:0] mpresults,
     
     //TLB
-    input wire[65:0]    tlb_status, // { is_IF, is_miss, rollback-epc, bva }
+    input wire[66:0]    tlb_status, // { is_store, is_IF, is_miss, rollback-epc, bva }
+    input wire          if_tlb_miss,
     output reg[31:0]    tlb_rollback_pc,
     output reg          tlb_write,
     output reg[3:0]     tlb_write_idx,
@@ -154,7 +156,16 @@ always @(*) begin
         exception <= ~ex_stop;
         pc_jumpto <= EX_ADDR_INIT;
     end
-    else if (tlb_status[64]) begin  // TLB miss
+    else if (tlb_status[65:64] == 2'b01) begin  // TLB miss && data
+        ex_cause <=  tlb_status[66] ? 5'd3 : 5'd2;
+        bubble_cnt <= bubble_cnt_dec;
+        ex_stopcnt <= 3'b010;
+        if_forward_reg_write <= 1'b0;
+        if_pc_jump <= 1'b1;
+        exception <= 1'b1;  // force jump
+        pc_jumpto <= cp0[EBASE];    // TLB refill exception handle, at CP0[EBASE]
+    end
+    else if (if_tlb_miss) begin
         ex_cause <= 5'd2;
         bubble_cnt <= bubble_cnt_dec;
         ex_stopcnt <= 3'b010;
@@ -413,6 +424,15 @@ always @(*) begin
         
         6'b011001: if (jpc[15:6] != 10'b0000000000) `RI_EXC else begin
             // MULTU
+            // data_a * data_b
+            bubble_cnt <= bubble_cnt_dec;
+            ex_stopcnt <= ex_stopcnt_dec;
+            if_forward_reg_write <= 1'b0;
+            if_pc_jump <= 1'b0;
+        end
+        
+        6'b011000: if (jpc[15:6] != 10'b0000000000) `RI_EXC else begin
+            // MULT
             // data_a * data_b
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -942,7 +962,7 @@ always@(posedge clk or negedge rst) begin
             if (cp0[STATUS][1] == 1'b0) begin
                 cp0[CAUSE][31] <= last_ds; // cause:BD
                 cp0[STATUS][1] <= 1; // status:EXL
-                if (tlb_status[64] && (!tlb_status[65])) begin    // TLB exception && not IF
+                if (tlb_status[65:64] == 2'b01) begin    // TLB exception && not IF
                     cp0[EPC] <= tlb_status[63:32];
                 end
                 else begin
@@ -952,8 +972,12 @@ always@(posedge clk or negedge rst) begin
             end
             if (ex_cause == 5'd4 || ex_cause == 5'd5)
                 cp0[BVA] <= bad_addr; // BVA
-            else if (ex_cause == 5'd2)
-                cp0[BVA] <= tlb_status[31:0]; // BVA
+            else if (ex_cause == 5'd2 || ex_cause == 5'd3) begin
+                if (tlb_status[65:64] == 2'b01) // Memory Access
+                    cp0[BVA] <= tlb_status[31:0]; // BVA
+                else
+                    cp0[BVA] <= npc - (last_ds ?  32'd8 : 32'd4); // BVA = EPC
+            end
         end
         else if(~ex_stop) begin
             case (op)
@@ -962,8 +986,12 @@ always@(posedge clk or negedge rst) begin
                 6'b010001: hi <= data_a;
                 6'b010011: lo <= data_a;
                 6'b011001: begin
-                    hi <= mpresult[63:32];
-                    lo <= mpresult[31:0];
+                    hi <= mpresultu[63:32];
+                    lo <= mpresultu[31:0];
+                end
+                6'b011000: begin
+                    hi <= mpresults[63:32];
+                    lo <= mpresults[31:0];
                 end
                 endcase
             6'b010000: begin

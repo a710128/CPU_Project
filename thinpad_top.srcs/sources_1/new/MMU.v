@@ -13,7 +13,7 @@ module MMU(
     input wire[3:0] tlb_write_idx,
     input wire[95:0] tlb_write_entry,
     input wire[7:0] current_asid,
-    output wire[65:0]  tlb_miss, // { is_IF, is_miss, epc, BVA}
+    output wire[66:0]  tlb_miss, // { is_store, is_IF, is_miss, epc, BVA}
     
     input wire[31:0] input_data,
     input wire[4:0] bytemode,
@@ -81,12 +81,13 @@ module MMU(
 reg tlb_enabled;
 wire[25:0] tlb_paddr;
 reg[37:0] paddr;
-wire[31:0] addr;
+(*keep = "TRUE"*) wire[31:0] addr;
 
 assign addr = paddr[31:0];
 assign tlb_miss[63: 32] = rollback_pc;
 assign tlb_miss[31: 0] = vaddr;
 assign tlb_miss[65] = is_IF;
+assign tlb_miss[66] = if_write;
 
 TLB J_TLB (
     .clk(clk),
@@ -164,7 +165,7 @@ assign debug_dpys   = dpys;
 wire[31:0] ram_read_data = addr[22] ? ext_ram_data : base_ram_data;
 
 reg flash_rp_n1 = 1'b1; reg flash_ce_n1 = 1'b1; reg flash_oe_n1 = 1'b1;
-reg flash_byte_n1 = 1'b1; reg flash_we_n1 = 1'b1; reg flash_a1 = 23'b0;
+reg flash_byte_n1 = 1'b1; reg flash_we_n1 = 1'b1; reg[22:0] flash_a1 = 23'b0;
 assign flash_rp_n = flash_rp_n1;
 assign flash_ce_n = flash_ce_n1;
 assign flash_oe_n = flash_oe_n1;
@@ -184,7 +185,7 @@ always @(*) begin
         rom_ce <= 0;
         
         // flash_rp_n1 <= 1'b1;
-        flash_ce_n1 <= 1'b1;
+        flash_ce_n1 <= 1'b0;
         flash_oe_n1 <= 1'b1;
         flash_we_n1 <= 1'b1;
         flash_byte_n1 <= 1'b1;
@@ -272,7 +273,7 @@ always @(*) begin
         end
         else if (addr[31:24] == 8'h1E ) begin   // FLASH
             flash_a1 <= addr[23:1];     //Flash地址，a0仅在8bit模式有效，16bit模式无意义
-            flash_ce_n1 <= 1'b0;         //Flash片选信号，低有效           
+            // flash_ce_n1 <= 1'b0;         //Flash片选信号，低有效           
             
             if (if_read) begin
                 flash_oe_n1 <= 1'b0;
@@ -311,7 +312,7 @@ always @(*) begin
             end
             else begin
                 output_data <= 32'h00000000;
-                flash_d_write <= 32'h00000000;
+                flash_d_write <= 16'h0000;
             end
             
         end

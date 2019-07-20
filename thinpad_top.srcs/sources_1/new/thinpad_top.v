@@ -100,7 +100,7 @@ assign rst = ~reset_btn;
 
 // MMU 信号
 wire mmu_read_wire, mmu_write_wire;
-wire[31:0] mmu_addr_wire, mmu_out_data, mmu_in_data;
+(*keep = "TRUE"*) wire[31:0] mmu_addr_wire, mmu_out_data, mmu_in_data;
 reg [31:0] mmu_addr; // MMU地址/数据
 
 // 反向传递信号
@@ -120,9 +120,10 @@ wire[31:0] id_regdata;
 
 // IF/ID 信号
 wire[31:0] if_id_i_ins, if_id_i_npc;
-reg [31:0] if_id_o_ins, if_id_o_npc;
+reg [31:0] if_id_o_ins, if_id_o_npc, if_id_o_tlb_miss;
 // IM 信号
 wire[31:0] if_imdata, if_imaddr;
+wire[66:0] tlb_status;
 
 IF if_instance(
     // input
@@ -145,6 +146,7 @@ always@(posedge clk) begin
     if (!ex_reg_bubble) begin
         if_id_o_npc <= if_id_i_npc;
         if_id_o_ins <= if_id_i_ins;
+        if_id_o_tlb_miss <= tlb_status[64] && tlb_status[65];
     end
 end
 
@@ -159,6 +161,7 @@ wire[25:0] id_ex_i_jpc;
 reg [25:0] id_ex_o_jpc;
 wire[31:0] id_ex_i_data1, id_ex_i_data2, id_ex_i_zeroimm, id_ex_i_signimm, id_ex_i_npc;
 reg [31:0] id_ex_o_data1, id_ex_o_data2, id_ex_o_zeroimm, id_ex_o_signimm, id_ex_o_npc;
+
 
 ID id_instance(
     // input
@@ -188,18 +191,27 @@ ID id_instance(
 );
 
 reg id_ex_exstop = 1'b1;
+reg id_ex_o_tlb_miss = 1'b0;
 wire ex_ex_last_eret;
 assign ex_if_bubble = (ex_ex_i_bubblecnt != 0);
 assign ex_reg_bubble = (ex_ex_i_bubblecnt != 0);
 
 // ID/EX registers
 
-wire[63:0] MPresult;
-mult_gen_0 IFMultplier (
+wire[63:0] MPresultU;
+mult_gen_0 IFMultplierU (
     .CLK(clk),
     .A(id_ex_i_data1),
     .B(id_ex_i_data2),
-    .P(MPresult)
+    .P(MPresultU)
+);
+
+wire[63:0] MPresultS;
+mult_gen_1 IFMultplierS (
+    .CLK(clk),
+    .A(id_ex_i_data1),
+    .B(id_ex_i_data2),
+    .P(MPresultS)
 );
 
 always@(posedge clk or negedge rst) begin
@@ -211,14 +223,15 @@ always@(posedge clk or negedge rst) begin
         ex_ex_o_bubblecnt <= 3'b000;
         ex_ex_o_stopcnt <= 3'b011;
         ex_ex_o_exc <= 1'b0;
+        id_ex_o_tlb_miss <= 1'b0;
     end
     else begin
         ex_ex_o_bubblecnt <= ex_ex_i_bubblecnt;
         ex_ex_o_stopcnt <= ex_ex_i_stopcnt;
         ex_ex_o_exc <= ex_ex_i_exc;
-    
         if (!ex_reg_bubble) begin
             id_ex_exstop <= (~ex_ex_i_delayslot | ex_ex_i_exc | ex_ex_last_eret) & (ex_ex_i_stopcnt != 0);
+            id_ex_o_tlb_miss <= if_id_o_tlb_miss;
             id_ex_o_npc <= id_ex_i_npc;
             id_ex_o_ifregwrite <= id_ex_i_ifregwrite;
             id_ex_o_ifmemread <= id_ex_i_ifmemread;
@@ -249,7 +262,6 @@ wire[31:0] ex_mem_i_res, ex_mem_i_memwrite;
 reg [31:0] ex_mem_o_res, ex_mem_o_memwrite;
 
 wire[4:0] ex_ip = {3'b00, uart_dataready, 2'b00};
-wire[65:0] tlb_status;
 wire[31:0] ex_tlb_rollback_pc_i;
 wire ex_tlb_write;
 wire[3:0] ex_tlb_write_idx;
@@ -288,9 +300,11 @@ EX ex_instance(
     .ip_6_2(ex_ip),
     
     // multiplier
-    .mpresult(MPresult),
+    .mpresultu(MPresultU),
+    .mpresults(MPresultS),
     
     //TLB
+    .if_tlb_miss(id_ex_o_tlb_miss),
     .tlb_status(tlb_status),
     .tlb_rollback_pc(ex_tlb_rollback_pc_i),
     .tlb_write(ex_tlb_write),
@@ -402,6 +416,7 @@ wire[11:0]  rom_addr;
 wire        rom_ce;
 wire[31:0]  rom_data;
 
+
 // MMU
 MMU mmu_instance(
     .clk(clk),
@@ -409,7 +424,9 @@ MMU mmu_instance(
     
     .if_read(mmu_read_wire),
     .if_write(mmu_write_wire),
+    
     .vaddr(mmu_addr_wire),
+    
     .input_data(mmu_in_data),
     .bytemode(mmu_bytemode),
     
@@ -491,5 +508,6 @@ blk_mem_gen_0 onchiprom (
     .addra(rom_addr),
     .douta(rom_data)
 );
+
 
 endmodule
