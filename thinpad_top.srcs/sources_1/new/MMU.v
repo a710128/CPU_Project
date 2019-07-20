@@ -35,7 +35,7 @@ module MMU(
     // on-chip rom
     input wire[31:0]    rom_data,
     output reg          rom_ce,
-    output reg[11:0]    rom_addr,
+    output reg[9:0]    rom_addr,
     
     output wire uart_rdn,
     output wire uart_wrn,
