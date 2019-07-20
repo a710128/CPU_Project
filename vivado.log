@@ -1,0 +1,139 @@
+#-----------------------------------------------------------
+# Vivado v2018.3 (64-bit)
+# SW Build 2405991 on Thu Dec  6 23:38:27 MST 2018
+# IP Build 2404404 on Fri Dec  7 01:43:56 MST 2018
+# Start of session at: Fri Jul 19 14:38:10 2019
+# Process ID: 16152
+# Current directory: C:/Users/user/Desktop/games/CPU_Project
+# Command line: vivado.exe -gui_launcher_event rodinguilauncherevent17496 C:\Users\user\Desktop\games\CPU_Project\thinpad_top.xpr
+# Log file: C:/Users/user/Desktop/games/CPU_Project/vivado.log
+# Journal file: C:/Users/user/Desktop/games/CPU_Project\vivado.jou
+#-----------------------------------------------------------
+start_gui
+open_project C:/Users/user/Desktop/games/CPU_Project/thinpad_top.xpr
+Scanning sources...
+Finished scanning sources
+WARNING: [filemgmt 56-3] IPUserFilesDir: Could not find the directory 'C:/Users/user/Desktop/games/CPU_Project/thinpad_top.ip_user_files'.
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1704] No user IP repositories specified
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository 'C:/Xilinx/Vivado/2018.3/data/ip'.
+open_project: Time (s): cpu = 00:00:23 ; elapsed = 00:00:11 . Memory (MB): peak = 689.570 ; gain = 90.141
+update_compile_order -fileset sources_1
+reset_run synth_1
+reset_run blk_mem_gen_0_synth_1
+launch_runs impl_1 -to_step write_bitstream -jobs 2
+INFO: [IP_Flow 19-1686] Generating 'Synthesis' target for IP 'blk_mem_gen_0'...
+[Fri Jul 19 14:39:04 2019] Launched blk_mem_gen_0_synth_1, synth_1...
+Run output will be captured here:
+blk_mem_gen_0_synth_1: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/blk_mem_gen_0_synth_1/runme.log
+synth_1: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/synth_1/runme.log
+[Fri Jul 19 14:39:04 2019] Launched impl_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/impl_1/runme.log
+INFO: [Device 21-403] Loading part xc7a100tfgg676-2L
+WARNING: [IP_Flow 19-4067] Ignoring invalid widget type specified checkbox.Providing a default widget
+WARNING: [IP_Flow 19-4067] Ignoring invalid widget type specified checkbox.Providing a default widget
+reset_run synth_1
+launch_runs impl_1 -to_step write_bitstream -jobs 2
+[Fri Jul 19 14:40:36 2019] Launched synth_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/synth_1/runme.log
+[Fri Jul 19 14:40:36 2019] Launched impl_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/impl_1/runme.log
+update_compile_order -fileset sources_1
+reset_run synth_1
+launch_runs impl_1 -to_step write_bitstream -jobs 2
+[Fri Jul 19 14:41:18 2019] Launched synth_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/synth_1/runme.log
+[Fri Jul 19 14:41:19 2019] Launched impl_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/impl_1/runme.log
+reset_run synth_1
+launch_runs impl_1 -to_step write_bitstream -jobs 2
+[Fri Jul 19 14:46:49 2019] Launched synth_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/synth_1/runme.log
+[Fri Jul 19 14:46:49 2019] Launched impl_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/impl_1/runme.log
+reset_run synth_1
+launch_runs synth_1 -jobs 2
+[Fri Jul 19 14:52:03 2019] Launched synth_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/synth_1/runme.log
+launch_runs impl_1 -jobs 2
+[Fri Jul 19 14:55:25 2019] Launched impl_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/impl_1/runme.log
+reset_run impl_1
+WARNING: [Vivado 12-1017] Problems encountered:
+1. PID not specified
+
+launch_runs impl_1 -to_step write_bitstream -jobs 2
+[Fri Jul 19 14:55:33 2019] Launched impl_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/impl_1/runme.log
+open_run impl_1
+INFO: [Common 17-41] Interrupt caught. Command should exit soon.
+INFO: [Netlist 29-17] Analyzing 1462 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-479] Netlist was created with Vivado 2018.3
+open_run: Time (s): cpu = 00:00:05 ; elapsed = 00:00:07 . Memory (MB): peak = 1159.543 ; gain = 0.000
+INFO: [Common 17-344] 'open_run' was cancelled
+reset_run synth_1
+launch_runs synth_1 -jobs 2
+[Fri Jul 19 15:06:27 2019] Launched synth_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/synth_1/runme.log
+reset_run synth_1
+launch_runs synth_1 -jobs 2
+[Fri Jul 19 15:07:15 2019] Launched synth_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/synth_1/runme.log
+reset_run synth_1
+launch_runs impl_1 -to_step write_bitstream -jobs 2
+[Fri Jul 19 15:10:42 2019] Launched synth_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/synth_1/runme.log
+[Fri Jul 19 15:10:42 2019] Launched impl_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/impl_1/runme.log
+open_run impl_1
+INFO: [Netlist 29-17] Analyzing 1462 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-479] Netlist was created with Vivado 2018.3
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Timing 38-478] Restoring timing data from binary archive.
+INFO: [Timing 38-479] Binary timing data restore complete.
+INFO: [Project 1-856] Restoring constraints from binary archive.
+INFO: [Project 1-853] Binary constraint restore complete.
+Reading XDEF placement.
+Reading placer database...
+Reading XDEF routing.
+Read XDEF File: Time (s): cpu = 00:00:02 ; elapsed = 00:00:02 . Memory (MB): peak = 1755.996 ; gain = 8.344
+Restored from archive | CPU: 2.000000 secs | Memory: 0.000000 MB |
+Finished XDEF File Restore: Time (s): cpu = 00:00:02 ; elapsed = 00:00:02 . Memory (MB): peak = 1755.996 ; gain = 8.344
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.006 . Memory (MB): peak = 1755.996 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 64 instances were transformed.
+  IOBUF => IOBUF (IBUF, OBUFT): 64 instances
+
+open_run: Time (s): cpu = 00:00:49 ; elapsed = 00:00:40 . Memory (MB): peak = 1878.164 ; gain = 718.621
+open_report: Time (s): cpu = 00:00:18 ; elapsed = 00:00:09 . Memory (MB): peak = 1923.738 ; gain = 41.180
+reset_run synth_1
+launch_runs impl_1 -to_step write_bitstream -jobs 2
+[Fri Jul 19 15:24:54 2019] Launched synth_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/synth_1/runme.log
+[Fri Jul 19 15:24:54 2019] Launched impl_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/impl_1/runme.log
+reset_run synth_1
+launch_runs impl_1 -to_step write_bitstream -jobs 2
+[Fri Jul 19 15:34:55 2019] Launched synth_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/synth_1/runme.log
+[Fri Jul 19 15:34:55 2019] Launched impl_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/impl_1/runme.log
+reset_run synth_1
+launch_runs synth_1 -jobs 2
+[Fri Jul 19 15:35:52 2019] Launched synth_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/synth_1/runme.log
+launch_runs impl_1 -to_step write_bitstream -jobs 2
+[Fri Jul 19 15:42:20 2019] Launched impl_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/impl_1/runme.log
+update_compile_order -fileset sources_1
+update_compile_order -fileset sources_1
+reset_run synth_1
+launch_runs impl_1 -to_step write_bitstream -jobs 2
+[Fri Jul 19 16:43:46 2019] Launched synth_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/synth_1/runme.log
+[Fri Jul 19 16:43:46 2019] Launched impl_1...
+Run output will be captured here: C:/Users/user/Desktop/games/CPU_Project/thinpad_top.runs/impl_1/runme.log
+exit
+INFO: [Common 17-206] Exiting Vivado at Fri Jul 19 18:44:34 2019...
