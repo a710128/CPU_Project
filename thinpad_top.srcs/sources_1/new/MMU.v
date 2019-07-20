@@ -65,6 +65,16 @@ module MMU(
     input wire tlbr_query,
     output wire[4:0] tlb_query_idx,
     output wire[95:0] tlb_query_entry
+
+    // flash
+//    inout  wire [15:0]flash_d,      //Flash数据
+//    output wire [22:0]flash_a,      //Flash地址，a0仅在8bit模式有效，16bit模式无意义
+//    output wire flash_rp_n,         //Flash复位信号，低有效
+//    output wire flash_vpen,         //Flash写保护信号，低电平时不能擦除、烧写
+//    output wire flash_ce_n,         //Flash片选信号，低有效
+//    output wire flash_oe_n,         //Flash读使能信号，低有效
+//    output wire flash_we_n,         //Flash写使能信号，低有效
+//    output wire flash_byte_n      //Flash 8bit模式选择，低有效。在使用flash的16位模式时请设为1
     );
 
 reg tlb_enabled;
@@ -146,6 +156,15 @@ assign debug_leds   = leds;
 assign debug_dpys   = dpys;
 
 wire[31:0] ram_read_data = addr[22] ? ext_ram_data : base_ram_data;
+
+reg flash_rp_n1 = 1'b1; reg flash_ce_n1 = 1'b1; reg flash_oe_n1 = 1'b1;
+reg flash_byte_n1 = 1'b1; reg flash_we_n1 = 1'b1; reg flash_a1 = 23'b0;
+assign flash_rp_n = flash_rp_n1;
+assign flash_ce_n = flash_ce_n1;
+assign flash_oe_n = flash_oe_n1;
+assign flash_byte_n = flash_byte_n1;
+assign flash_we_n = flash_we_n1;
+assign flash_a = flash_a1;
 
 always @(*) begin
     key_get <= 0;
@@ -240,6 +259,14 @@ always @(*) begin
             end
         end
         else if (addr[31:24] == 8'h1E ) begin   // FLASH
+//            flash_a1 <= addr[23:1];     //Flash地址，a0仅在8bit模式有效，16bit模式无意义
+//            flash_rp_n1 <= 1'b1;         //Flash复位信号，低有效
+//            // flash_vpen <= 1'b0;         //Flash写保护信号，低电平时不能擦除、烧写
+//            flash_ce_n1 <= 1'b0;         //Flash片选信号，低有效
+//            flash_oe_n1 <= 1'b0;         //Flash读使能信号，低有效
+//            flash_we_n1 <= 1'b1;         //Flash写使能信号，低有效
+//            flash_byte_n1 <= 1'b1;
+//            output_data <= {16'b0, flash_d};
         end
         else if (addr[31:12] == 20'h1FC00) begin // on-chip ROM
             rom_ce <= 1;
