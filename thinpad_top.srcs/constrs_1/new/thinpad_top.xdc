@@ -1,31 +1,33 @@
 #Clock
-set_property -dict {PACKAGE_PIN D18 IOSTANDARD LVCMOS33} [get_ports clk_50M]
-set_property -dict {PACKAGE_PIN C18 IOSTANDARD LVCMOS33} [get_ports clk_11M0592]
+set_property -dict {PACKAGE_PIN D18 IOSTANDARD LVCMOS33} [get_ports clk_50M] ;#50MHz main clock in
+set_property -dict {PACKAGE_PIN C18 IOSTANDARD LVCMOS33} [get_ports clk_11M0592] ;#11.0592MHz clock for UART
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_11M0592_IBUF]
 
 create_clock -period 20.000 -name clk_50M -waveform {0.000 10.000} [get_ports clk_50M]
 create_clock -period 90.422 -name clk_11M0592 -waveform {0.000 45.211} [get_ports clk_11M0592]
 
 #Touch Button
-set_property -dict {PACKAGE_PIN J19 IOSTANDARD LVCMOS33} [get_ports {touch_btn[0]}]
-set_property -dict {PACKAGE_PIN E25 IOSTANDARD LVCMOS33} [get_ports {touch_btn[1]}]
-set_property -dict {PACKAGE_PIN F23 IOSTANDARD LVCMOS33} [get_ports {touch_btn[2]}]
-set_property -dict {PACKAGE_PIN E23 IOSTANDARD LVCMOS33} [get_ports {touch_btn[3]}]
-set_property -dict {PACKAGE_PIN H19 IOSTANDARD LVCMOS33} [get_ports clock_btn]
-set_property -dict {PACKAGE_PIN F22 IOSTANDARD LVCMOS33} [get_ports reset_btn]
+set_property -dict {PACKAGE_PIN J19 IOSTANDARD LVCMOS33} [get_ports touch_btn[0]] ;#BTN1
+set_property -dict {PACKAGE_PIN E25 IOSTANDARD LVCMOS33} [get_ports touch_btn[1]] ;#BTN2
+set_property -dict {PACKAGE_PIN F23 IOSTANDARD LVCMOS33} [get_ports touch_btn[2]] ;#BTN3
+set_property -dict {PACKAGE_PIN E23 IOSTANDARD LVCMOS33} [get_ports touch_btn[3]] ;#BTN4
+set_property -dict {PACKAGE_PIN H19 IOSTANDARD LVCMOS33} [get_ports clock_btn] ;#BTN5
+set_property -dict {PACKAGE_PIN F22 IOSTANDARD LVCMOS33} [get_ports reset_btn] ;#BTN6
 
 #required if touch button used as manual clock source
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clock_btn_IBUF]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets reset_btn_IBUF]
 
 #CPLD
-set_property -dict {PACKAGE_PIN L8 IOSTANDARD LVCMOS33} [get_ports uart_wrn]
-set_property -dict {PACKAGE_PIN M6 IOSTANDARD LVCMOS33} [get_ports uart_rdn]
-set_property -dict {PACKAGE_PIN L5 IOSTANDARD LVCMOS33} [get_ports uart_tbre]
-set_property -dict {PACKAGE_PIN L7 IOSTANDARD LVCMOS33} [get_ports uart_tsre]
-set_property -dict {PACKAGE_PIN L4 IOSTANDARD LVCMOS33} [get_ports uart_dataready]
+set_property -dict {PACKAGE_PIN L8 IOSTANDARD LVCMOS33} [get_ports {uart_wrn}]
+set_property -dict {PACKAGE_PIN M6 IOSTANDARD LVCMOS33} [get_ports {uart_rdn}]
+set_property -dict {PACKAGE_PIN L5 IOSTANDARD LVCMOS33} [get_ports {uart_tbre}]
+set_property -dict {PACKAGE_PIN L7 IOSTANDARD LVCMOS33} [get_ports {uart_tsre}]
+set_property -dict {PACKAGE_PIN L4 IOSTANDARD LVCMOS33} [get_ports {uart_dataready}]
 
 #Ext serial
-set_property -dict {IOSTANDARD LVCMOS33 PACKAGE_PIN L19} [get_ports txd]
-set_property -dict {IOSTANDARD LVCMOS33 PACKAGE_PIN K21} [get_ports rxd]
+set_property -dict {IOSTANDARD LVCMOS33 PACKAGE_PIN L19} [get_ports txd] ;#GPIO5
+set_property -dict {IOSTANDARD LVCMOS33 PACKAGE_PIN K21} [get_ports rxd] ;#GPIO6
 
 #USB
 set_property -dict {PACKAGE_PIN K3 IOSTANDARD LVCMOS33} [get_ports sl811_a0]
@@ -101,7 +103,7 @@ set_property -dict {PACKAGE_PIN G15 IOSTANDARD LVCMOS33} [get_ports {dpy0[3]}]
 set_property -dict {PACKAGE_PIN H16 IOSTANDARD LVCMOS33} [get_ports {dpy0[4]}]
 set_property -dict {PACKAGE_PIN H14 IOSTANDARD LVCMOS33} [get_ports {dpy0[5]}]
 set_property -dict {PACKAGE_PIN G19 IOSTANDARD LVCMOS33} [get_ports {dpy0[6]}]
-set_property -dict {PACKAGE_PIN J8 IOSTANDARD LVCMOS33} [get_ports {dpy0[7]}]
+set_property -dict {PACKAGE_PIN  J8 IOSTANDARD LVCMOS33} [get_ports {dpy0[7]}]
 
 #DPY1
 set_property -dict {PACKAGE_PIN H9 IOSTANDARD LVCMOS33} [get_ports {dpy1[0]}]
@@ -147,7 +149,7 @@ set_property -dict {PACKAGE_PIN N7 IOSTANDARD LVCMOS33} [get_ports {dip_sw[29]}]
 set_property -dict {PACKAGE_PIN M7 IOSTANDARD LVCMOS33} [get_ports {dip_sw[30]}]
 set_property -dict {PACKAGE_PIN M5 IOSTANDARD LVCMOS33} [get_ports {dip_sw[31]}]
 
-set_property -dict {PACKAGE_PIN K8 IOSTANDARD LVCMOS33} [get_ports {flash_a[0]}]
+set_property -dict {PACKAGE_PIN K8 IOSTANDARD LVCMOS33}  [get_ports {flash_a[0]}]
 set_property -dict {PACKAGE_PIN C26 IOSTANDARD LVCMOS33} [get_ports {flash_a[1]}]
 set_property -dict {PACKAGE_PIN B26 IOSTANDARD LVCMOS33} [get_ports {flash_a[2]}]
 set_property -dict {PACKAGE_PIN B25 IOSTANDARD LVCMOS33} [get_ports {flash_a[3]}]
@@ -318,6 +320,3 @@ set_property -dict {PACKAGE_PIN U16 IOSTANDARD LVCMOS33} [get_ports ext_ram_we_n
 set_property CFGBVS VCCO [current_design]
 set_property CONFIG_VOLTAGE 3.3 [current_design]
 
-
-set_output_delay -clock [get_clocks [get_clocks -of_objects [get_pins pll/inst/mmcm_adv_inst/CLKOUT1]]] 5.000 [list [get_ports {{base_ram_addr[0]} {base_ram_addr[1]} {base_ram_addr[2]} {base_ram_addr[3]} {base_ram_addr[4]} {base_ram_addr[5]} {base_ram_addr[6]} {base_ram_addr[7]} {base_ram_addr[8]} {base_ram_addr[9]} {base_ram_addr[10]} {base_ram_addr[11]} {base_ram_addr[12]} {base_ram_addr[13]} {base_ram_addr[14]} {base_ram_addr[15]} {base_ram_addr[16]} {base_ram_addr[17]} {base_ram_addr[18]} {base_ram_addr[19]} {base_ram_be_n[0]} {base_ram_be_n[1]} {base_ram_be_n[2]} {base_ram_be_n[3]} base_ram_ce_n base_ram_oe_n base_ram_we_n {ext_ram_addr[0]} {ext_ram_addr[1]} {ext_ram_addr[2]} {ext_ram_addr[3]} {ext_ram_addr[4]} {ext_ram_addr[5]} {ext_ram_addr[6]} {ext_ram_addr[7]} {ext_ram_addr[8]} {ext_ram_addr[9]} {ext_ram_addr[10]} {ext_ram_addr[11]} {ext_ram_addr[12]} {ext_ram_addr[13]} {ext_ram_addr[14]} {ext_ram_addr[15]} {ext_ram_addr[16]} {ext_ram_addr[17]} {ext_ram_addr[18]} {ext_ram_addr[19]} {ext_ram_be_n[0]} {ext_ram_be_n[1]} {ext_ram_be_n[2]} {ext_ram_be_n[3]} ext_ram_ce_n ext_ram_oe_n ext_ram_we_n}] [get_ports {{base_ram_data[0]} {base_ram_data[1]} {base_ram_data[2]} {base_ram_data[3]} {base_ram_data[4]} {base_ram_data[5]} {base_ram_data[6]} {base_ram_data[7]} {base_ram_data[8]} {base_ram_data[9]} {base_ram_data[10]} {base_ram_data[11]} {base_ram_data[12]} {base_ram_data[13]} {base_ram_data[14]} {base_ram_data[15]} {base_ram_data[16]} {base_ram_data[17]} {base_ram_data[18]} {base_ram_data[19]} {base_ram_data[20]} {base_ram_data[21]} {base_ram_data[22]} {base_ram_data[23]} {base_ram_data[24]} {base_ram_data[25]} {base_ram_data[26]} {base_ram_data[27]} {base_ram_data[28]} {base_ram_data[29]} {base_ram_data[30]} {base_ram_data[31]} {ext_ram_data[31]} {ext_ram_data[0]} {ext_ram_data[1]} {ext_ram_data[2]} {ext_ram_data[3]} {ext_ram_data[4]} {ext_ram_data[5]} {ext_ram_data[6]} {ext_ram_data[7]} {ext_ram_data[8]} {ext_ram_data[9]} {ext_ram_data[10]} {ext_ram_data[11]} {ext_ram_data[12]} {ext_ram_data[13]} {ext_ram_data[14]} {ext_ram_data[15]} {ext_ram_data[16]} {ext_ram_data[17]} {ext_ram_data[18]} {ext_ram_data[19]} {ext_ram_data[20]} {ext_ram_data[21]} {ext_ram_data[22]} {ext_ram_data[23]} {ext_ram_data[24]} {ext_ram_data[25]} {ext_ram_data[26]} {ext_ram_data[27]} {ext_ram_data[28]} {ext_ram_data[29]} {ext_ram_data[30]}}]]
-set_input_delay -clock [get_clocks [get_clocks -of_objects [get_pins pll/inst/mmcm_adv_inst/CLKOUT1]]] 5.000 [get_ports {{base_ram_data[0]} {base_ram_data[1]} {base_ram_data[2]} {base_ram_data[3]} {base_ram_data[4]} {base_ram_data[5]} {base_ram_data[6]} {base_ram_data[7]} {base_ram_data[8]} {base_ram_data[9]} {base_ram_data[10]} {base_ram_data[11]} {base_ram_data[12]} {base_ram_data[13]} {base_ram_data[14]} {base_ram_data[15]} {base_ram_data[16]} {base_ram_data[17]} {base_ram_data[18]} {base_ram_data[19]} {base_ram_data[20]} {base_ram_data[21]} {base_ram_data[22]} {base_ram_data[23]} {base_ram_data[24]} {base_ram_data[25]} {base_ram_data[26]} {base_ram_data[27]} {base_ram_data[28]} {base_ram_data[29]} {base_ram_data[30]} {base_ram_data[31]} {ext_ram_data[0]} {ext_ram_data[1]} {ext_ram_data[2]} {ext_ram_data[3]} {ext_ram_data[4]} {ext_ram_data[5]} {ext_ram_data[6]} {ext_ram_data[7]} {ext_ram_data[8]} {ext_ram_data[9]} {ext_ram_data[10]} {ext_ram_data[11]} {ext_ram_data[12]} {ext_ram_data[13]} {ext_ram_data[14]} {ext_ram_data[15]} {ext_ram_data[16]} {ext_ram_data[17]} {ext_ram_data[18]} {ext_ram_data[19]} {ext_ram_data[20]} {ext_ram_data[21]} {ext_ram_data[22]} {ext_ram_data[23]} {ext_ram_data[24]} {ext_ram_data[25]} {ext_ram_data[26]} {ext_ram_data[27]} {ext_ram_data[28]} {ext_ram_data[29]} {ext_ram_data[30]} {ext_ram_data[31]}}]
