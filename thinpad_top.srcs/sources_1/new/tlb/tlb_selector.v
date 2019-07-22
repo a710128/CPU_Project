@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module tlb_selector #(parameter WIDTH = 33) (
+module tlb_selector #(parameter WIDTH = 20) (
     input wire[WIDTH - 1 : 0]    inp0,
     input wire[WIDTH - 1 : 0]    inp1,
     input wire[WIDTH - 1 : 0]    inp2,
