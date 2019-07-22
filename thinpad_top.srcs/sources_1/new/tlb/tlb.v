@@ -24,14 +24,14 @@ module tlb(
     input wire clk,
     input wire rst,
     
-    // TLB 查询 / from IF
-    input wire tlb_qe1,
-    input wire[31:0] vaddr1,
-    input wire[7:0] asid1,
-    output wire[31:0] paddr1,
-    output wire tlb_miss1,
+    // TLB 查询 /  IF
+    input wire          tlb_qe1,
+    input wire[31:0]    vaddr1,
+    input wire[7:0]     asid1,
+    output wire[31:0]   paddr1,
+    output wire         tlb_miss1,
     
-    // TLB 查询 / from Mem
+    // TLB 查询 /  Mem
     input wire          tlb_qe2,
     input wire          is_laod2,
     input wire[31:0]    vaddr2,

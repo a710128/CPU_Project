@@ -1,0 +1,203 @@
+Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
+----------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
+| Date         : Mon Jul 22 18:48:50 2019
+| Host         : DESKTOP-R77VRGM running 64-bit major release  (build 9200)
+| Command      : report_control_sets -verbose -file thinpad_top_control_sets_placed.rpt
+| Design       : thinpad_top
+| Device       : xc7a100t
+----------------------------------------------------------------------------------------
+
+Control Set Information
+
+Table of Contents
+-----------------
+1. Summary
+2. Histogram
+3. Flip-Flop Distribution
+4. Detailed Control Set Information
+
+1. Summary
+----------
+
++----------------------------------------------------------+-------+
+|                          Status                          | Count |
++----------------------------------------------------------+-------+
+| Number of unique control sets                            |   126 |
+| Unused register locations in slices containing registers |   241 |
++----------------------------------------------------------+-------+
+
+
+2. Histogram
+------------
+
++--------+--------------+
+| Fanout | Control Sets |
++--------+--------------+
+|      1 |            1 |
+|      2 |            3 |
+|      4 |           10 |
+|      5 |            3 |
+|      7 |            4 |
+|      8 |           25 |
+|      9 |            2 |
+|     10 |            4 |
+|     11 |            2 |
+|     12 |            2 |
+|     13 |            3 |
+|     14 |            2 |
+|     15 |            4 |
+|    16+ |           61 |
++--------+--------------+
+
+
+3. Flip-Flop Distribution
+-------------------------
+
++--------------+-----------------------+------------------------+-----------------+--------------+
+| Clock Enable | Synchronous Set/Reset | Asynchronous Set/Reset | Total Registers | Total Slices |
++--------------+-----------------------+------------------------+-----------------+--------------+
+| No           | No                    | No                     |             500 |          241 |
+| No           | No                    | Yes                    |            1168 |          413 |
+| No           | Yes                   | No                     |              70 |           26 |
+| Yes          | No                    | No                     |             489 |          209 |
+| Yes          | No                    | Yes                    |            2591 |         1031 |
+| Yes          | Yes                   | No                     |              21 |            7 |
++--------------+-----------------------+------------------------+-----------------+--------------+
+
+
+4. Detailed Control Set Information
+-----------------------------------
+
++----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+------------------+----------------+
+|                                   Clock Signal                                   |                                   Enable Signal                                   |                                  Set/Reset Signal                                 | Slice Load Count | Bel Load Count |
++----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+------------------+----------------+
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/vga800x600at75/hdata1                                                |                                                                                   |                1 |              1 |
+|  n_1_6947_BUFG                                                                   |                                                                                   | mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/rom_ce_reg_i_2_0             |                1 |              2 |
+|  video_clk_OBUF_BUFG                                                             |                                                                                   | mmu_instance/vga800x600at75/videoblue[1]_i_1_n_3                                  |                1 |              2 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/vga800x600at75/vpos                                                  |                                                                                   |                1 |              2 |
+|  mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/if_id_o_tlb_miss[0]_i_2_0  |                                                                                   |                                                                                   |                3 |              4 |
+|  mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/intq_reg_1[0]              |                                                                                   |                                                                                   |                2 |              4 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep__0_3 | reset_btn_IBUF                                                                    |                1 |              4 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/vga800x600at75/vpos                                                  | mmu_instance/vga800x600at75/vpos[5]_i_1_n_3                                       |                1 |              4 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[14]_2        | reset_btn_IBUF                                                                    |                1 |              4 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/vga800x600at75/hpos1                                                 |                                                                                   |                2 |              4 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep__0_9 | reset_btn_IBUF                                                                    |                3 |              4 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[23]          | reset_btn_IBUF                                                                    |                2 |              4 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[14]_4        | reset_btn_IBUF                                                                    |                3 |              4 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep__0_7 | reset_btn_IBUF                                                                    |                2 |              4 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_op_reg[3]_0          | reset_btn_IBUF                                                                    |                3 |              5 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[12]_rep_9    | reset_btn_IBUF                                                                    |                2 |              5 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[11]_rep_2    | reset_btn_IBUF                                                                    |                3 |              5 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/vga800x600at75/vcount                                                | mmu_instance/vga800x600at75/vpos                                                  |                3 |              7 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_op_reg[3]            | reset_btn_IBUF                                                                    |                3 |              7 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[11]_rep_3    | reset_btn_IBUF                                                                    |                4 |              7 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[12]_rep_8    | reset_btn_IBUF                                                                    |                5 |              7 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/chr_signal_input2[23]_i_1_n_3                                        |                                                                                   |                2 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/chr_signal_input1[55]_i_1_n_3                                        |                                                                                   |                4 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/chr_signal_input1[31]_i_1_n_3                                        |                                                                                   |                3 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/chr_signal_input2[63]_i_1_n_3                                        |                                                                                   |                6 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/chr_signal_input2[39]_i_1_n_3                                        |                                                                                   |                2 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/chr_signal_input1[15]_i_1_n_3                                        |                                                                                   |                3 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/chr_signal_input2[55]_i_1_n_3                                        |                                                                                   |                1 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/chr_signal_input2[47]_i_1_n_3                                        |                                                                                   |                3 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/chr_signal_input2[15]_i_1_n_3                                        |                                                                                   |                2 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/chr_signal_input1[7]_i_1_n_3                                         |                                                                                   |                3 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[12]_rep_10   | reset_btn_IBUF                                                                    |                2 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep_3    | reset_btn_IBUF                                                                    |                3 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_op_reg[1]_1          | reset_btn_IBUF                                                                    |                5 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[14]_0        | reset_btn_IBUF                                                                    |                2 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep__0_8 | reset_btn_IBUF                                                                    |                4 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/chr_signal_input1[47]_i_1_n_3                                        |                                                                                   |                2 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/dpys[7]_i_1_n_3                                                      |                                                                                   |                2 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/chr_signal_input2[7]_i_1_n_3                                         |                                                                                   |                4 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/chr_signal_input2[31]_i_1_n_3                                        |                                                                                   |                4 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/chr_signal_input1[63]_i_1_n_3                                        |                                                                                   |                4 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_op_reg[0]            | reset_btn_IBUF                                                                    |                2 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/ex_mem_o_regwrite_reg[0]_0   | reset_btn_IBUF                                                                    |                8 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/chr_signal_input1[39]_i_1_n_3                                        |                                                                                   |                2 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/chr_signal_input1[23]_i_1_n_3                                        |                                                                                   |                1 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep_4    | reset_btn_IBUF                                                                    |                3 |              8 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[12]_rep_6    | reset_btn_IBUF                                                                    |                2 |              9 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[11]_rep_1    | reset_btn_IBUF                                                                    |                2 |              9 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/vga800x600at75/hdata1                                                | mmu_instance/vga800x600at75/vdata                                                 |                3 |             10 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep__0_6 | reset_btn_IBUF                                                                    |                3 |             10 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_op_reg[2]            | reset_btn_IBUF                                                                    |                6 |             10 |
+|  mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/E[0]                       |                                                                                   |                                                                                   |                4 |             10 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep_6    | reset_btn_IBUF                                                                    |                5 |             11 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[14]_1        | reset_btn_IBUF                                                                    |                4 |             11 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[15]_1        | reset_btn_IBUF                                                                    |                7 |             12 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[12]_rep_0    | reset_btn_IBUF                                                                    |                5 |             12 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep__0   | reset_btn_IBUF                                                                    |                6 |             13 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep_7    | reset_btn_IBUF                                                                    |                7 |             13 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep__0_2 | reset_btn_IBUF                                                                    |                2 |             13 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[12]_rep_5    | reset_btn_IBUF                                                                    |                4 |             14 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep      | reset_btn_IBUF                                                                    |                6 |             14 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[11]_rep      | reset_btn_IBUF                                                                    |                7 |             15 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_op_reg[5]_0          | reset_btn_IBUF                                                                    |                3 |             15 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep_2    | reset_btn_IBUF                                                                    |                3 |             15 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep__0_1 | reset_btn_IBUF                                                                    |                3 |             15 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[12]_rep_3    | reset_btn_IBUF                                                                    |                3 |             16 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep__0_5 | reset_btn_IBUF                                                                    |                3 |             16 |
+|  mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/ex_mem_o_ifmemwrite_reg[0] |                                                                                   |                                                                                   |                5 |             16 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/leds[15]_i_1_n_3                                                     |                                                                                   |                6 |             16 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep__0_4 | reset_btn_IBUF                                                                    |                9 |             16 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[11]_rep_0    | reset_btn_IBUF                                                                    |                3 |             17 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep_1    | reset_btn_IBUF                                                                    |                5 |             17 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[14]_3        | reset_btn_IBUF                                                                    |                5 |             18 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[14]          | reset_btn_IBUF                                                                    |               10 |             19 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[12]_rep_1    | reset_btn_IBUF                                                                    |                9 |             19 |
+|  mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/L0_reg[1]_1[0]             |                                                                                   |                                                                                   |                7 |             20 |
+|  mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/E[0]                       |                                                                                   |                                                                                   |                9 |             20 |
+|  mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/L0_reg[1]_1[0]             |                                                                                   |                                                                                   |                9 |             20 |
+|  mmu_instance/J_TLB/TLB_ENTRY_LABEL[13].tlb_entry_inst/E[0]                      |                                                                                   |                                                                                   |                8 |             20 |
+|  mmu_instance/J_TLB/TLB_ENTRY_LABEL[1].tlb_entry_inst/E[0]                       |                                                                                   |                                                                                   |                7 |             20 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[12]_rep_2    | reset_btn_IBUF                                                                    |                5 |             21 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep_0    | reset_btn_IBUF                                                                    |                7 |             23 |
+|  mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/flash_oe_n1_reg_i_2[0]     |                                                                                   |                                                                                   |               12 |             23 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[12]_rep_11   | reset_btn_IBUF                                                                    |                6 |             24 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep_5    | reset_btn_IBUF                                                                    |                5 |             24 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[12]_rep      | reset_btn_IBUF                                                                    |                9 |             24 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[15]_0        | reset_btn_IBUF                                                                    |               13 |             25 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[13]_rep__0_0 | reset_btn_IBUF                                                                    |               13 |             25 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_op_reg[4]            | reset_btn_IBUF                                                                    |               12 |             29 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/ex_mem_o_regwrite_reg[2]     | reset_btn_IBUF                                                                    |               32 |             32 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/ex_mem_o_regwrite_reg[1]     | reset_btn_IBUF                                                                    |               31 |             32 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/ex_mem_o_regwrite_reg[2]_2   | reset_btn_IBUF                                                                    |               24 |             32 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/ex_mem_o_regwrite_reg[0]     | reset_btn_IBUF                                                                    |               28 |             32 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[12]_rep_12   | reset_btn_IBUF                                                                    |               10 |             32 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[12]_rep_4    | reset_btn_IBUF                                                                    |                9 |             32 |
+|  video_clk_OBUF_BUFG                                                             | if_instance/data_hold[31]_i_1_n_3                                                 |                                                                                   |                6 |             32 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/ex_mem_o_regwrite_reg[2]_0   | reset_btn_IBUF                                                                    |               32 |             32 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/ex_mem_o_regwrite_reg[2]_1   | reset_btn_IBUF                                                                    |               30 |             32 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_exstop_reg             | reset_btn_IBUF                                                                    |               11 |             32 |
+|  n_2_6933_BUFG                                                                   |                                                                                   | mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/ex_mem_o_ifmemwrite_reg_0[0] |               12 |             32 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_jpc_reg[12]_rep_7    | reset_btn_IBUF                                                                    |                9 |             32 |
+| ~mmu_instance/rdn_reg_i_4_n_3                                                    |                                                                                   | mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/AR[0]                        |               12 |             34 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/ex_ex_o_bubblecnt_reg[1]     | reset_btn_IBUF                                                                    |               29 |             67 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/ex_ex_o_bubblecnt_reg[1]     |                                                                                   |               28 |             71 |
+|  video_clk_OBUF_BUFG                                                             | ex_instance/E[0]                                                                  |                                                                                   |               47 |             83 |
+|  video_clk_OBUF_BUFG                                                             | ex_instance/id_ex_o_jpc_reg[1]_rep_12[0]                                          | reset_btn_IBUF                                                                    |               34 |             96 |
+|  video_clk_OBUF_BUFG                                                             | ex_instance/id_ex_o_jpc_reg[1]_rep_6[0]                                           | reset_btn_IBUF                                                                    |               36 |             96 |
+|  video_clk_OBUF_BUFG                                                             | ex_instance/id_ex_o_jpc_reg[1]_rep_17[0]                                          | reset_btn_IBUF                                                                    |               32 |             96 |
+|  video_clk_OBUF_BUFG                                                             | ex_instance/id_ex_o_jpc_reg[1]_rep_11[0]                                          | reset_btn_IBUF                                                                    |               29 |             96 |
+|  video_clk_OBUF_BUFG                                                             | ex_instance/id_ex_o_jpc_reg[1]_rep_9[0]                                           | reset_btn_IBUF                                                                    |               30 |             96 |
+|  video_clk_OBUF_BUFG                                                             | ex_instance/id_ex_o_jpc_reg[1]_rep_8[0]                                           | reset_btn_IBUF                                                                    |               21 |             96 |
+|  video_clk_OBUF_BUFG                                                             | ex_instance/id_ex_o_jpc_reg[1]_rep_16[0]                                          | reset_btn_IBUF                                                                    |               30 |             96 |
+|  tlbr_query_BUFG                                                                 |                                                                                   |                                                                                   |               96 |             96 |
+|  video_clk_OBUF_BUFG                                                             | ex_instance/id_ex_o_jpc_reg[1]_rep_10[0]                                          | reset_btn_IBUF                                                                    |               36 |             96 |
+|  video_clk_OBUF_BUFG                                                             | ex_instance/id_ex_o_jpc_reg[1]_rep_13[0]                                          | reset_btn_IBUF                                                                    |               30 |             96 |
+|  video_clk_OBUF_BUFG                                                             | ex_instance/id_ex_o_jpc_reg[1]_rep_14[0]                                          | reset_btn_IBUF                                                                    |               31 |             96 |
+|  video_clk_OBUF_BUFG                                                             | ex_instance/id_ex_o_jpc_reg[1]_rep_2[0]                                           | reset_btn_IBUF                                                                    |               40 |             96 |
+|  video_clk_OBUF_BUFG                                                             | ex_instance/id_ex_o_jpc_reg[1]_rep_15[0]                                          | reset_btn_IBUF                                                                    |               33 |             96 |
+|  video_clk_OBUF_BUFG                                                             | ex_instance/id_ex_o_jpc_reg[1]_rep_4[0]                                           | reset_btn_IBUF                                                                    |               40 |             96 |
+|  video_clk_OBUF_BUFG                                                             | ex_instance/id_ex_o_jpc_reg[1]_rep_3[0]                                           | reset_btn_IBUF                                                                    |               36 |             96 |
+|  video_clk_OBUF_BUFG                                                             | ex_instance/id_ex_o_jpc_reg[1]_rep_7[0]                                           | reset_btn_IBUF                                                                    |               40 |             96 |
+|  video_clk_OBUF_BUFG                                                             | ex_instance/id_ex_o_jpc_reg[1]_rep_5[0]                                           | reset_btn_IBUF                                                                    |               35 |             96 |
+|  n_0_2757_BUFG                                                                   |                                                                                   |                                                                                   |               36 |             96 |
+|  video_clk_OBUF_BUFG                                                             | mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/id_ex_o_npc                  |                                                                                   |               70 |            144 |
+|  video_clk_OBUF_BUFG                                                             |                                                                                   |                                                                                   |               43 |            151 |
+|  video_clk_OBUF_BUFG                                                             |                                                                                   | reset_btn_IBUF                                                                    |              413 |           1168 |
++----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+------------------+----------------+
+
+

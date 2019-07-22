@@ -1,0 +1,91 @@
+Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
+| Date         : Mon Jul 22 18:49:37 2019
+| Host         : DESKTOP-R77VRGM running 64-bit major release  (build 9200)
+| Command      : report_drc -file thinpad_top_drc_routed.rpt -pb thinpad_top_drc_routed.pb -rpx thinpad_top_drc_routed.rpx
+| Design       : thinpad_top
+| Device       : xc7a100tfgg676-2L
+| Speed File   : -2L
+| Design State : Fully Routed
+---------------------------------------------------------------------------------------------------------------------------
+
+Report DRC
+
+Table of Contents
+-----------------
+1. REPORT SUMMARY
+2. REPORT DETAILS
+
+1. REPORT SUMMARY
+-----------------
+            Netlist: netlist
+          Floorplan: design_1
+      Design limits: <entire design considered>
+           Ruledeck: default
+             Max violations: <unlimited>
+             Violations found: 11
++----------+----------+-------------------+------------+
+| Rule     | Severity | Description       | Violations |
++----------+----------+-------------------+------------+
+| PDRC-153 | Warning  | Gated clock check | 11         |
++----------+----------+-------------------+------------+
+
+2. REPORT DETAILS
+-----------------
+PDRC-153#1 Warning
+Gated clock check  
+Net mmu_instance/J_TLB/TLB_ENTRY_LABEL[13].tlb_entry_inst/E[0] is a gated clock net sourced by a combinational pin mmu_instance/J_TLB/TLB_ENTRY_LABEL[13].tlb_entry_inst/oup_reg[19]_i_2__3/O, cell mmu_instance/J_TLB/TLB_ENTRY_LABEL[13].tlb_entry_inst/oup_reg[19]_i_2__3. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Related violations: <none>
+
+PDRC-153#2 Warning
+Gated clock check  
+Net mmu_instance/J_TLB/TLB_ENTRY_LABEL[1].tlb_entry_inst/E[0] is a gated clock net sourced by a combinational pin mmu_instance/J_TLB/TLB_ENTRY_LABEL[1].tlb_entry_inst/oup_reg[19]_i_2__0/O, cell mmu_instance/J_TLB/TLB_ENTRY_LABEL[1].tlb_entry_inst/oup_reg[19]_i_2__0. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Related violations: <none>
+
+PDRC-153#3 Warning
+Gated clock check  
+Net mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/E[0] is a gated clock net sourced by a combinational pin mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/oup_reg[19]_i_2/O, cell mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/oup_reg[19]_i_2. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Related violations: <none>
+
+PDRC-153#4 Warning
+Gated clock check  
+Net mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/L0_reg[1]_1[0] is a gated clock net sourced by a combinational pin mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/oup_reg[19]_i_2__1/O, cell mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/oup_reg[19]_i_2__1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Related violations: <none>
+
+PDRC-153#5 Warning
+Gated clock check  
+Net mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/intq_reg_1[0] is a gated clock net sourced by a combinational pin mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/tlb_write_idx_reg[3]_i_2/O, cell mmu_instance/J_TLB/TLB_ENTRY_LABEL[5].tlb_entry_inst/tlb_write_idx_reg[3]_i_2. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Related violations: <none>
+
+PDRC-153#6 Warning
+Gated clock check  
+Net mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/E[0] is a gated clock net sourced by a combinational pin mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/rom_addr_reg[9]_i_1/O, cell mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/rom_addr_reg[9]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Related violations: <none>
+
+PDRC-153#7 Warning
+Gated clock check  
+Net mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/L0_reg[1]_1[0] is a gated clock net sourced by a combinational pin mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/oup_reg[19]_i_2__2/O, cell mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/oup_reg[19]_i_2__2. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Related violations: <none>
+
+PDRC-153#8 Warning
+Gated clock check  
+Net mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/ex_mem_o_ifmemwrite_reg[0] is a gated clock net sourced by a combinational pin mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/flash_d_write_reg[15]_i_2/O, cell mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/flash_d_write_reg[15]_i_2. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Related violations: <none>
+
+PDRC-153#9 Warning
+Gated clock check  
+Net mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/flash_oe_n1_reg_i_2[0] is a gated clock net sourced by a combinational pin mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/flash_a1_reg[22]_i_1/O, cell mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/flash_a1_reg[22]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Related violations: <none>
+
+PDRC-153#10 Warning
+Gated clock check  
+Net mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/if_id_o_tlb_miss[0]_i_2_0 is a gated clock net sourced by a combinational pin mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/rom_ce_reg_i_2/O, cell mmu_instance/J_TLB/TLB_ENTRY_LABEL[9].tlb_entry_inst/rom_ce_reg_i_2. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Related violations: <none>
+
+PDRC-153#11 Warning
+Gated clock check  
+Net mmu_instance/rdn_reg_i_4_n_3 is a gated clock net sourced by a combinational pin mmu_instance/rdn_reg_i_4/O, cell mmu_instance/rdn_reg_i_4. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Related violations: <none>
+
+
