@@ -89,7 +89,7 @@ always @(*) begin
         if ((mem_vaddr >= 32'h80000000) && (mem_vaddr < 32'hC0000000)) begin
             mem_paddr <= {3'b0, mem_vaddr[28:0]};
             tlb_qe2 <= 0;
-            tlb_exception <= 0;
+            mem_tlb_exception <= 0;
         end
         else begin
             tlb_qe2 <= 1;
@@ -110,7 +110,7 @@ always @(*) begin
     else begin
         mem_paddr <= 32'b0;
         tlb_qe2 <= 0;
-        tlb_exception <= 0;
+        mem_tlb_exception <= 0;
     end
 end
 

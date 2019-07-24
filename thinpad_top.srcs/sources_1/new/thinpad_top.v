@@ -79,7 +79,187 @@ module thinpad_top(
     output wire video_clk,         //像素时钟输出
     output wire video_de           //行数据有效信号，用于区分消隐区
 );
+/* ================ UART ================= */
+wire    uart_data_read, uart_data_write;
+wire    uart_data_ready, uart_busy;
+wire[7:0]   uart_data_in,   uart_data_out;
+uart uart_inst (
+    .clk_50M(clk_50M),
+    .rst(reset_btn),
+    .txd(txd),
+    .rxd(rxd),
+    .uart_data_read(uart_data_read),
+    .uart_data_ready(uart_data_ready),
+    .uart_data_in(uart_data_in),
+    .uart_data_write(uart_data_write),
+    .uart_data_out(uart_data_out),
+    .uart_busy(uart_busy)
+);
 
+/* ================== DPY ================= */
+// 7段数码管译码器演示，将number用16进制显示在数码管上面
+reg[7:0] dpy_number;
+SEG7_LUT segL(.oSEG1(dpy0), .iDIG(dpy_number[3:0])); //dpy0是低位数码管
+SEG7_LUT segH(.oSEG1(dpy1), .iDIG(dpy_number[7:4])); //dpy1是高位数码管
+
+/* ================= MMU ================= */
+wire[31:0]  next_PC_vaddr;
+wire[31:0]  next_PC_paddr;
+wire        next_PC_tlbmiss;
+
+mmu mmu_inst(
+    .clk(clk_50M),
+    .rst(reset_btn),
+    
+    // Global
+    .current_entryHi(),
+    
+    // IF
+    .if_qe(1),
+    .if_vaddr(next_PC_vaddr),
+    .if_paddr(next_PC_paddr),
+    .if_miss(next_PC_tlbmiss),
+    
+    // Mem
+    .mem_qe(),
+    .mem_is_load(),
+    .mem_vaddr(),
+    .mem_paddr(),
+    .mem_tlb_exception(),
+    
+    // TLBP
+    .tlbp_qe(),
+    .tlbp_result(),
+    
+    // TLBR
+    .tlbr_qe(),
+    .tlbr_index(),
+    .tlbr_result(),
+    
+    // TLB 修改
+    .tlb_we(),
+    .tlb_write_index(),
+    .tlb_write_entry()    // { EntryHi, EntryLo0, EntryLo1 }
+);
+
+/* ================= MEM ================= */
+wire        if_ce;
+wire[31:0]  if_addr;
+wire        if_skip;
+wire[31:0]  if_data;
+
+mem mem_inst (
+    .clk_50M(clk_50M),
+    .rst(reset_btn),
+
+    // Interface
+    .if_ce(if_ce),
+    .mem_ce(),
+    .mem_we(),
+    
+    .if_addr(if_addr),
+    .mem_addr(),
+    .mem_data_write(),
+    .mem_bytemode(),
+    
+    .if_data(if_data),
+    .mem_data(),
+    .if_skip(if_skip),  // if insert bubble
+    .mem_valid(),
+    
+    // I/O Port
+    
+    //BaseRAM信号
+    .base_ram_data(base_ram_data),  //BaseRAM数据，低8位与CPLD串口控制器共享
+    .base_ram_addr(base_ram_addr), //BaseRAM地址
+    .base_ram_be_n(base_ram_be_n),  //BaseRAM字节使能，低有效。如果不使用字节使能，请保持为0
+    .base_ram_ce_n(base_ram_ce_n),       //BaseRAM片选，低有效
+    .base_ram_oe_n(base_ram_oe_n),       //BaseRAM读使能，低有效
+    .base_ram_we_n(base_ram_we_n),       //BaseRAM写使能，低有效
+
+    //ExtRAM信号
+    .ext_ram_data(ext_ram_data),  //ExtRAM数据
+    .ext_ram_addr(ext_ram_addr), //ExtRAM地址
+    .ext_ram_be_n(ext_ram_be_n),  //ExtRAM字节使能，低有效。如果不使用字节使能，请保持为0
+    .ext_ram_ce_n(ext_ram_ce_n),       //ExtRAM片选，低有效
+    .ext_ram_oe_n(ext_ram_oe_n),       //ExtRAM读使能，低有效
+    .ext_ram_we_n(ext_ram_we_n),       //ExtRAM写使能，低有效
+
+    // UART
+    .uart_data_read(uart_data_read),
+    .uart_data_ready(uart_data_ready),
+    .uart_data_in(uart_data_in),
+    
+    .uart_data_write(uart_data_write),
+    .uart_data_out(uart_data_out),
+    .uart_busy(uart_busy),
+
+    //Flash存储器信号，参考 JS28F640 芯片手册
+    .flash_a(flash_a),      //Flash地址，a0仅在8bit模式有效，16bit模式无意义
+    .flash_d(flash_d),      //Flash数据
+    .flash_rp_n(flash_rp_n),         //Flash复位信号，低有效
+    .flash_vpen(flash_vpen),         //Flash写保护信号，低电平时不能擦除、烧写
+    .flash_ce_n(flash_ce_n),         //Flash片选信号，低有效
+    .flash_oe_n(flash_oe_n),         //Flash读使能信号，低有效
+    .flash_we_n(flash_we_n),         //Flash写使能信号，低有效
+    .flash_byte_n(flash_byte_n),       //Flash 8bit模式选择，低有效。在使用flash的16位模式时请设为1
+
+    //USB 控制器信号，参考 SL811 芯片手册
+    .sl811_a0(sl811_a0),
+    //inout  wire[7:0] sl811_d,     //USB数据线与网络控制器的dm9k_sd[7:0]共享
+    .sl811_wr_n(sl811_wr_n),
+    .sl811_rd_n(sl811_rd_n),
+    .sl811_cs_n(sl811_cs_n),
+    .sl811_rst_n(sl811_rst_n),
+    .sl811_dack_n(sl811_dack_n),
+    .sl811_intrq(sl811_intrq),
+    .sl811_drq_n(sl811_drq_n),
+
+    //网络控制器信号，参考 DM9000A 芯片手册
+    .dm9k_cmd(dm9k_cmd),
+    .dm9k_sd(dm9k_sd),
+    .dm9k_iow_n(dm9k_iow_n),
+    .dm9k_ior_n(dm9k_ior_n),
+    .dm9k_cs_n(dm9k_cs_n),
+    .dm9k_pwrst_n(dm9k_pwrst_n),
+    .dm9k_int(dm9k_int),
+    
+    // 
+    .leds(leds),         //16位LED，输出时1点亮
+    .dpy_number(dpy_number)    //数码管显示数值
+);
+
+
+/* ================== PC ==================*/
+
+// input
+assign if_ce = ~next_PC_tlbmiss;
+assign if_addr = next_PC_paddr;
+reg         i_if_id_tlbmiss;
+reg[31:0]   i_if_id_pc;
+wire        i_if_id_noinst;     // no instruction
+assign i_if_id_noinst = (i_if_id_tlbmiss || if_skip) ? 1 : 0;
+
+always @(posedge clk_50M) begin
+    i_if_id_tlbmiss <= next_PC_tlbmiss;
+    i_if_id_pc <= next_PC_vaddr;
+end
+
+/* ============ Fetch/Decode ============= */
+
+reg[31:0]   o_if_id_inst;       // To decode, branch_predictor
+reg         o_if_id_tlbmiss;    // To decode
+reg[31:0]   o_if_id_pc;         // To decode, branch_predictor
+reg         o_if_id_noinst;     // To decode, branch_predictor
+reg         o_if_id_ifskip;     // To branch_predictor
+
+always @(posedge clk_50M) begin
+    o_if_id_tlbmiss <= i_if_id_tlbmiss;
+    o_if_id_pc <= i_if_id_pc;
+    o_if_id_inst <= if_data;
+    o_if_id_noinst <= i_if_id_noinst;
+    o_if_id_ifskip <= if_skip;
+end
 
 /* =========== Demo code begin =========== */
 
@@ -97,21 +277,7 @@ pll_example clock_gen
   .clk_in1(clk_50M) // 外部时钟输入
  );
 
-reg reset_of_clk10M;
-// 异步复位，同步释放
-always@(posedge clk_10M or negedge locked) begin
-    if(~locked) reset_of_clk10M <= 1'b1;
-    else        reset_of_clk10M <= 1'b0;
-end
 
-always@(posedge clk_10M or posedge reset_of_clk10M) begin
-    if(reset_of_clk10M)begin
-        // Your Code
-    end
-    else begin
-        // Your Code
-    end
-end
 
 // 数码管连接关系示意图，dpy1同理
 // p=dpy0[0] // ---a---
@@ -124,65 +290,9 @@ end
 // g=dpy0[7] // |     |
 //           // ---d---  p
 
-// 7段数码管译码器演示，将number用16进制显示在数码管上面
-reg[7:0] number;
-SEG7_LUT segL(.oSEG1(dpy0), .iDIG(number[3:0])); //dpy0是低位数码管
-SEG7_LUT segH(.oSEG1(dpy1), .iDIG(number[7:4])); //dpy1是高位数码管
 
-reg[15:0] led_bits;
-assign leds = led_bits;
 
-always@(posedge clock_btn or posedge reset_btn) begin
-    if(reset_btn)begin //复位按下，设置LED和数码管为初始值
-        number<=0;
-        led_bits <= 16'h1;
-    end
-    else begin //每次按下时钟按钮，数码管显示值加1，LED循环左移
-        number <= number+1;
-        led_bits <= {led_bits[14:0],led_bits[15]};
-    end
-end
 
-//直连串口接收发送演示，从直连串口收到的数据再发送出去
-wire [7:0] ext_uart_rx;
-reg  [7:0] ext_uart_buffer, ext_uart_tx;
-wire ext_uart_ready, ext_uart_busy;
-reg ext_uart_start, ext_uart_avai;
-
-async_receiver #(.ClkFrequency(50000000),.Baud(9600)) //接收模块，9600无检验位
-    ext_uart_r(
-        .clk(clk_50M),                       //外部时钟信号
-        .RxD(rxd),                           //外部串行信号输入
-        .RxD_data_ready(ext_uart_ready),  //数据接收到标志
-        .RxD_clear(ext_uart_ready),       //清除接收标志
-        .RxD_data(ext_uart_rx)             //接收到的一字节数据
-    );
-    
-always @(posedge clk_50M) begin //接收到缓冲区ext_uart_buffer
-    if(ext_uart_ready)begin
-        ext_uart_buffer <= ext_uart_rx;
-        ext_uart_avai <= 1;
-    end else if(!ext_uart_busy && ext_uart_avai)begin 
-        ext_uart_avai <= 0;
-    end
-end
-always @(posedge clk_50M) begin //将缓冲区ext_uart_buffer发送出去
-    if(!ext_uart_busy && ext_uart_avai)begin 
-        ext_uart_tx <= ext_uart_buffer;
-        ext_uart_start <= 1;
-    end else begin 
-        ext_uart_start <= 0;
-    end
-end
-
-async_transmitter #(.ClkFrequency(50000000),.Baud(9600)) //发送模块，9600无检验位
-    ext_uart_t(
-        .clk(clk_50M),                  //外部时钟信号
-        .TxD(txd),                      //串行信号输出
-        .TxD_busy(ext_uart_busy),       //发送器忙状态指示
-        .TxD_start(ext_uart_start),    //开始发送信号
-        .TxD_data(ext_uart_tx)        //待发送的数据
-    );
 
 //图像输出演示，分辨率800x600@75Hz，像素时钟为50MHz
 wire [11:0] hdata;
