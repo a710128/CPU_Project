@@ -26,7 +26,7 @@ module exe_top(
     
     input wire          issue,
     input wire[2:0]     issue_buffer_id,
-    input wire[109:0]   issue_vec,
+    input wire[140:0]   issue_vec,
     
     output wire         commit,
     output wire[4:0]    commit_reg,
@@ -70,14 +70,17 @@ module exe_top(
 );
 
 
+wire        issue_assign_reg;
 wire        issue_component;
 wire[4:0]   issue_reg;
 wire[5:0]   issue_regheap;
+wire[2:0]   issue_component_id;
 
-
+assign issue_assign_reg = issue_vec[0];
 assign issue_component = issue_vec[12];
 assign issue_reg = issue_vec[5:1];
 assign issue_regheap = issue_vec[11:6];
+assign issue_component_id = issue_vec[15:13];
 
 
 wire[5:0]   commit_buffer_regid;        // 处于提交阶段的指令的回写寄存器编号
@@ -115,9 +118,10 @@ generate
             .clear(clear),
             .reg_id(i),
             
-            .set_reg_a( issue && (issue_regheap == i) ),
+            .set_reg_a( issue && issue_assign_reg && (issue_regheap == i) ),
             .set_reg_R( issue_reg ),
             .set_commit_wb( ~issue_component ),
+            .set_component_id( issue_component_id ),
             
             .reg_component_id ( regheap_comp_id[i] ),
             .reg_component_available( component_status_avail[ regheap_comp_id[i] ] ),
@@ -158,18 +162,122 @@ always @(posedge clk) begin
 end
 
 
-/* ========= MUL DIV ========= */
-wire[63:0]  muldiv_result;
-wire        muldiv_clear;
-
 
 
 /* =========   ALU   =========*/
 
+wire        req_ri[7:0];
+wire        req_rj[7:0];
+wire[5:0]   req_riid[7:0];
+wire[5:0]   req_rjid[7:0];
 
 
+generate
+    for (i = 0; i <= 5; i = i + 1)
+    begin:ALU_GEN
+        alu alu_inst(
+            .clk(clk),
+            .rst(rst),
+            .clear(clear),
+            
+            // 获取发射信息
+            .issue(issue && (issue_vec[12] == 1'b1) && (issue_vec[15:13] == i)),    // Issue && Component && CompID = i
+            .issue_vec(issue_vec),
+            
+            // 获取寄存器状态
+            .ri_val(req_ri[i] ?  regheap_val[req_riid[i]] : 32'b0 ),
+            .ri_avail(req_ri[i] ? regheap_avail[req_riid[i]] : 32'b0),
+            .rj_val(req_rj[i] ?  regheap_val[req_rjid[i]] : 32'b0 ),
+            .rj_avail(req_rj[i] ? regheap_avail[req_rjid[i]] : 32'b0),
+            
+            // 输出状态
+            .used(component_status[i]),
+            .ri(req_ri[i]),
+            .rj(req_rj[i]),
+            .ri_id(req_riid[i]),
+            .rj_id(req_rjid[i]),
+            
+            // 输出结果
+            .result(component_val[i]),
+            .avail(component_status_avail[i]),
+            .change_meta(component_change_meta[i]),    // disabled
+            .set_nw_meta(component_nw_meta[i]),    // disalbed
+            .exc(component_status_exc[i]),
+            .excode(component_excode[i])
+        );
+    end
+endgenerate
 
-// generate ROB
+/* ============ BRANCH =========== */
+branch branch_inst(
+    .clk(clk),
+    .rst(rst),
+    .clear(clear),
+    
+    // 获取发射信息
+    .issue(issue && (issue_vec[12] == 1'b1) && (issue_vec[15:13] == 6)),    // Issue && Component && CompID = i
+    .issue_vec(issue_vec),
+    
+    // 获取寄存器状态
+    .ri_val(req_ri[6] ?  regheap_val[req_riid[6]] : 32'b0 ),
+    .ri_avail(req_ri[6] ? regheap_avail[req_riid[6]] : 32'b0),
+    .rj_val(req_rj[6] ?  regheap_val[req_rjid[6]] : 32'b0 ),
+    .rj_avail(req_rj[6] ? regheap_avail[req_rjid[6]] : 32'b0),
+    
+    // 输出状态
+    .used(component_status[6]),
+    .ri(req_ri[6]),
+    .rj(req_rj[6]),
+    .ri_id(req_riid[6]),
+    .rj_id(req_rjid[6]),
+    
+    // 输出结果
+    .result(component_val[6]),
+    .avail(component_status_avail[6]),
+    .change_meta(component_change_meta[6]),    // disabled
+    .set_nw_meta(component_nw_meta[6]),    // disalbed
+    .exc(component_status_exc[6]),
+    .excode(component_excode[6])
+);
+
+/* ============ MULDIV =========== */
+wire[63:0]  muldiv_result;
+wire        muldiv_clear;
+muldiv muldiv_inst(
+    .clk(clk),
+    .rst(rst),
+    .clear(clear),
+    
+    // 获取发射信息
+    .issue(issue && (issue_vec[12] == 1'b1) && (issue_vec[15:13] == 7)),    // Issue && Component && CompID = i
+    .issue_vec(issue_vec),
+    
+    // 获取寄存器状态
+    .ri_val(req_ri[7] ?  regheap_val[req_riid[7]] : 32'b0 ),
+    .ri_avail(req_ri[7] ? regheap_avail[req_riid[7]] : 32'b0),
+    .rj_val(req_rj[7] ?  regheap_val[req_rjid[7]] : 32'b0 ),
+    .rj_avail(req_rj[7] ? regheap_avail[req_rjid[7]] : 32'b0),
+    
+    // 输出状态
+    .used(component_status[7]),
+    .ri(req_ri[7]),
+    .rj(req_rj[7]),
+    .ri_id(req_riid[7]),
+    .rj_id(req_rjid[7]),
+    
+    // 输出结果
+    .result(component_val[7]),
+    .avail(component_status_avail[7]),
+    .change_meta(component_change_meta[7]),    // disabled
+    .set_nw_meta(component_nw_meta[7]),    // disalbed
+    .exc(component_status_exc[7]),
+    .excode(component_excode[7]),
+    
+    .read_result(muldiv_clear),
+    .muldiv_result(muldiv_result)
+);
+
+/* ============ ROB ============ */
 wire[141:0] rob_inps[8:0];
 reg[141:0]  rob_inp_reg[7:0];
 assign rob_inps[8] = 141'b0;

@@ -385,6 +385,7 @@ wire[31:0]  cp0_result;// from cp0
 wire[31:0]  cp0_EBASE;
 wire[31:0]  cp0_SR;
 
+wire[5:0]   hardint;
 
 exe_top exec_inst(
     .clk(clk_50M),
@@ -412,7 +413,7 @@ exe_top exec_inst(
     .mem_tlbmiss(mem_tlbmiss),
     .mem_modify_ex(mem_modify_ex),      
     
-    .hardint(),
+    .hardint(hardint),
     
     // cp0
     .cp0_ce(cp0_ce),
@@ -437,8 +438,9 @@ exe_top exec_inst(
 /* ========= CP0 ========= */
 wire[31:0]  cp0_COUNTER;
 wire[31:0]  cp0_COMPARE;
-wire[5:0]   ip_7_2;
-
+wire tinmer_interrupt = (cp0_COUNTER >= cp0_COMPARE) ? 1'b1 : 1'b0;
+wire[5:0]   ip_7_2 = { tinmer_interrupt, 1'b0, 1'b0, uart_data_ready, 1'b0, 1'b0 };
+assign hardint = ip_7_2;
 
 
 cp0 cp0_instance (
@@ -481,52 +483,5 @@ cp0 cp0_instance (
     .tlb_write_entry(tlb_write_entry)    // { EntryHi, EntryLo0, EntryLo1 }
 );
 
-
-// PLL分频示例
-wire locked, clk_10M, clk_20M;
-pll_example clock_gen 
- (
-  // Clock out ports
-  .clk_out1(clk_10M), // 时钟输出1，频率在IP配置界面中设置
-  .clk_out2(clk_20M), // 时钟输出2，频率在IP配置界面中设置
-  // Status and control signals
-  .reset(reset_btn), // PLL复位输入
-  .locked(locked), // 锁定输出，"1"表示时钟稳定，可作为后级电路复位
- // Clock in ports
-  .clk_in1(clk_50M) // 外部时钟输入
- );
-
-
-
-// 数码管连接关系示意图，dpy1同理
-// p=dpy0[0] // ---a---
-// c=dpy0[1] // |     |
-// d=dpy0[2] // f     b
-// e=dpy0[3] // |     |
-// b=dpy0[4] // ---g---
-// a=dpy0[5] // |     |
-// f=dpy0[6] // e     c
-// g=dpy0[7] // |     |
-//           // ---d---  p
-
-
-
-
-
-//图像输出演示，分辨率800x600@75Hz，像素时钟为50MHz
-wire [11:0] hdata;
-assign video_red = hdata < 266 ? 3'b111 : 0; //红色竖条
-assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0; //绿色竖条
-assign video_blue = hdata >= 532 ? 2'b11 : 0; //蓝色竖条
-assign video_clk = clk_50M;
-vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
-    .clk(clk_50M), 
-    .hdata(hdata), //横坐标
-    .vdata(),      //纵坐标
-    .hsync(video_hsync),
-    .vsync(video_vsync),
-    .data_enable(video_de)
-);
-/* =========== Demo code end =========== */
 
 endmodule

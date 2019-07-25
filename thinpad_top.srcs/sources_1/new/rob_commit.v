@@ -282,8 +282,16 @@ always @(posedge clk) begin
                                 // 啥也不干
                             end
                             else begin
-                                change_pc_ds <= 1; // 下一个延迟槽提交时修改PC
-                                change_pc_to <= i_meta;
+                                if (i_meta[1:0] == 2'b00) begin
+                                    change_pc_ds <= 1; // 下一个延迟槽提交时修改PC
+                                    change_pc_to <= i_meta;
+                                end
+                                else begin
+                                    feed_to_bp <= 0; // 不更新！！
+                                    commit <= 0;     // 不提交
+                                    excode <= 5'h04;      // AdEL
+                                    normal_exc <= 1;
+                                end
                             end
                         end
                         3'd2: begin // MEM  （需要写回内存）

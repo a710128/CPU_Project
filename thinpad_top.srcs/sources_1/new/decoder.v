@@ -147,6 +147,8 @@ wire        is_break    =   (op == 6'b000000) && (func == 6'b001101);
 wire        is_movz     =   (op == 6'b000000) && (func == 6'b001010) && (inst[10:6] == 5'b00000);
 wire        is_multu    =   (op == 6'b000000) && (func == 6'b011001) && (inst[15:6] == 10'b0);
 wire        is_mult     =   (op == 6'b000000) && (func == 6'b011000) && (inst[15:6] == 10'b0);
+wire        is_div      =   (op == 6'b000000) && (func == 6'b011010) && (inst[15:6] == 10'b0);
+wire        is_divu     =   (op == 6'b000000) && (func == 6'b011011) && (inst[15:6] == 10'b0);
 
 // COP0
 wire        is_mtc0     =   (op == 6'b010000) && (mt == 5'b00100) && (inst[10:3] == 8'b0);
@@ -215,7 +217,7 @@ convt64to6 convt64to6_branch (
 );
 
 convt8to3 convt8to3_muldiv (
-    .inp({6'b0, is_multu, is_mult }),    // total 2
+    .inp({4'b0, is_divu, is_div, is_multu, is_mult }),    // total 4
     .out(muldiv_opid),
     .found(require_muldiv)
 );
@@ -431,7 +433,7 @@ always @(*) begin
                             issue_ri_id <= reg_active[inst[25:21]];
                             issue_rj <= 1;
                             issue_rj_id <= reg_active[inst[20:16]];
-                            issue_meta <= 0;
+                            issue_meta <= {27'b0, inst[10:6]};
                         end
                         default: ;
                     endcase

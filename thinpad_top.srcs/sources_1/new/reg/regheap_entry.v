@@ -38,7 +38,6 @@ module regheap_entry(
     input  wire[31:0]           reg_component_val,          // 运算器的结果
     
     // 寄存器堆状态
-    output wire[4:0]            reg_assigned,       // 当前关联的寄存器
     output wire                 reg_used,           // 当前寄存器是否被使用
     output wire                 reg_available,      // 寄存器的值是否可用
     output wire[31:0]           reg_val,            // 寄存器的值
@@ -63,7 +62,6 @@ reg         commit_wb;  // 在commit阶段使用特殊通路回写
 reg         last_commit;    // 是否是最后一次commit的寄存器
 
 assign reg_component_id = assign_component;
-assign reg_assigned = assign_reg;
 assign reg_used = used;
 assign reg_available = (assign_reg == 0) ? 1 : available;
 assign reg_val = (assign_reg == 0) ? 0 : val;
