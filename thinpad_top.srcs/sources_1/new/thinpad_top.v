@@ -79,6 +79,8 @@ module thinpad_top(
     output wire video_clk,         //像素时钟输出
     output wire video_de           //行数据有效信号，用于区分消隐区
 );
+wire    clear;
+
 /* ================ UART ================= */
 wire    uart_data_read, uart_data_write;
 wire    uart_data_ready, uart_busy;
@@ -107,12 +109,39 @@ wire[31:0]  next_PC_vaddr;
 wire[31:0]  next_PC_paddr;
 wire        next_PC_tlbmiss;
 
+wire        mem_ce;     // from exe
+wire        mem_write;
+wire[31:0]  mem_vaddr;
+wire        mem_tlbmiss;
+wire        mem_modify_ex;
+wire        mem_noexc;
+
+wire[31:0]  mem_paddr;  // to mem
+wire[1:0]   mem_exception;
+
+wire[31:0]  cp0_ENTRYHI;    // from cp0
+wire        tlbr_qe;
+wire[3:0]   tlbr_index;
+wire[95:0]  tlbr_result;
+
+wire        tlbp_qe;
+wire[4:0]   tlbp_result;
+
+wire        tlb_we;
+wire[3:0]   tlb_write_index;
+wire[95:0]  tlb_write_entry;
+
+
+assign mem_tlbmiss = (mem_exception == 2'd2 || mem_exception == 2'd3) ? 1'b1 : 1'b0;
+assign mem_modify_ex = (mem_exception == 2'd1) ? 1'b1 : 1'b0;
+assign mem_noexc = (mem_exception == 2'd0) ? 1'b1 : 1'b0;
+
 mmu mmu_inst(
     .clk(clk_50M),
     .rst(reset_btn),
     
     // Global
-    .current_entryHi(),
+    .current_entryHi(cp0_ENTRYHI),
     
     // IF
     .if_qe(1),
@@ -121,25 +150,25 @@ mmu mmu_inst(
     .if_miss(next_PC_tlbmiss),
     
     // Mem
-    .mem_qe(),
-    .mem_is_load(),
-    .mem_vaddr(),
-    .mem_paddr(),
-    .mem_tlb_exception(),
+    .mem_qe(mem_ce),
+    .mem_is_load(mem_write),
+    .mem_vaddr(mem_vaddr),
+    .mem_paddr(mem_paddr),
+    .mem_tlb_exception(mem_exception),
     
     // TLBP
-    .tlbp_qe(),
-    .tlbp_result(),
+    .tlbp_qe(tlbp_qe),
+    .tlbp_result(tlbp_result),
     
     // TLBR
-    .tlbr_qe(),
-    .tlbr_index(),
-    .tlbr_result(),
+    .tlbr_qe(tlbr_qe),
+    .tlbr_index(tlbr_index),
+    .tlbr_result(tlbr_result),
     
     // TLB 修改
-    .tlb_we(),
-    .tlb_write_index(),
-    .tlb_write_entry()    // { EntryHi, EntryLo0, EntryLo1 }
+    .tlb_we(tlb_we),
+    .tlb_write_index(tlb_write_index),
+    .tlb_write_entry(tlb_write_entry)    // { EntryHi, EntryLo0, EntryLo1 }
 );
 
 /* ================= MEM ================= */
@@ -148,24 +177,30 @@ wire[31:0]  if_addr;
 wire        if_skip;
 wire[31:0]  if_data;
 
+
+wire[31:0]  mem_data_write; // from exe
+wire[4:0]   mem_bytemode;
+wire        mem_avail;
+wire[31:0]  mem_data_read;
+
 mem mem_inst (
     .clk_50M(clk_50M),
     .rst(reset_btn),
 
     // Interface
     .if_ce(if_ce),
-    .mem_ce(),
-    .mem_we(),
+    .mem_ce(mem_ce && mem_noexc),
+    .mem_we(mem_write),
     
     .if_addr(if_addr),
-    .mem_addr(),
-    .mem_data_write(),
-    .mem_bytemode(),
+    .mem_addr(mem_paddr),
+    .mem_data_write(mem_data_write),
+    .mem_bytemode(mem_bytemode),
     
     .if_data(if_data),
-    .mem_data(),
+    .mem_data(mem_data_read),
     .if_skip(if_skip),  // if insert bubble
-    .mem_valid(),
+    .mem_valid(mem_avail),
     
     // I/O Port
     
@@ -238,7 +273,7 @@ assign if_addr = next_PC_paddr;
 reg         i_if_id_tlbmiss;
 reg[31:0]   i_if_id_pc;
 wire        i_if_id_noinst;     // no instruction
-assign i_if_id_noinst = (i_if_id_tlbmiss || if_skip) ? 1 : 0;
+assign i_if_id_noinst = if_skip;
 
 always @(posedge clk_50M) begin
     i_if_id_tlbmiss <= next_PC_tlbmiss;
@@ -252,16 +287,200 @@ reg         o_if_id_tlbmiss;    // To decode
 reg[31:0]   o_if_id_pc;         // To decode, branch_predictor
 reg         o_if_id_noinst;     // To decode, branch_predictor
 reg         o_if_id_ifskip;     // To branch_predictor
+wire[31:0]  bp_jump;            // From branch predictor
+wire        bp_delay_slot;      // From branch predictor
+
+wire[31:0]  pc_jump_addr;            // 回传实际跳转地址
 
 always @(posedge clk_50M) begin
-    o_if_id_tlbmiss <= i_if_id_tlbmiss;
-    o_if_id_pc <= i_if_id_pc;
-    o_if_id_inst <= if_data;
-    o_if_id_noinst <= i_if_id_noinst;
-    o_if_id_ifskip <= if_skip;
+    if (clear) begin
+        o_if_id_tlbmiss <= 0;
+        o_if_id_pc <= pc_jump_addr - 32'h4;
+        o_if_id_inst <= 0;
+        o_if_id_noinst <= 1;
+        o_if_id_ifskip <= 0;
+    end
+    else begin
+        o_if_id_tlbmiss <= i_if_id_tlbmiss;
+        o_if_id_pc <= i_if_id_pc;
+        o_if_id_inst <= if_data;
+        o_if_id_noinst <= i_if_id_noinst;
+        o_if_id_ifskip <= if_skip;
+    end
 end
 
-/* =========== Demo code begin =========== */
+/* ========= Decode ======== */
+wire        commit;         // from exe
+wire[4:0]   commit_reg;     // from exe
+wire[5:0]   commit_regheap; // from exe
+wire[63:0]  regheap_status;
+wire[7:0]   component_status;
+wire[7:0]   buffer_status;
+
+wire        cant_issue, issue, assign_reg, assign_component, issue_ri, issue_rj, issue_delay_slot;  // to exe
+wire[2:0]   issue_buffer_id, assign_component_id, issue_commit_op;
+wire[4:0]   issue_reg, issue_excode;
+wire[5:0]   assign_reg_id, issue_ri_id, issue_rj_id, issue_uop;
+wire[31:0]  issue_meta, issue_pc, issue_j;
+
+decoder decoder_inst(
+    .clk(clk_50M),
+    .rst(reset_btn),
+    .clear(clear),              // 清空流水线以及当前指令
+    
+    // 指令输入
+    .inst(o_if_id_inst),
+    .if_tlbmiss(o_if_id_tlbmiss),
+    .pc(o_if_id_pc),
+    .noinst(o_if_id_noinst),
+    .pred_jump(bp_jump),          // 分支预测跳转地址
+    .is_delay_slot(bp_delay_slot),      // 是否为延迟槽指令
+    
+    // 指令提交（更新寄存器状态）
+    .commit(commit),
+    .commit_reg(commit_reg),
+    .commit_regheap(commit_regheap),
+    
+    // 发射指令
+    .cant_issue(cant_issue),         // 运算器资源不足
+    .issue(issue),
+    .issue_buffer_id(issue_buffer_id),
+    .issue_reg(issue_reg),          // 发射指令的真实寄存器编号
+    .assign_reg(assign_reg),
+    .assign_reg_id(assign_reg_id),      // 关联寄存器编号
+    .assign_component(assign_component),   
+    .assign_component_id(assign_component_id),    //  0~5:    ALU,    6:  BRANCH,     7: MULDIV
+    .issue_ri(issue_ri),
+    .issue_ri_id(issue_ri_id),
+    .issue_rj(issue_rj),
+    .issue_rj_id(issue_rj_id),
+    .issue_commit_op(issue_commit_op), //   0: nothing,   1: branch,      2:  mem     3.  MFHI/LO,    4.  MTHI/LO,   5. Copy From MULDIV,     6.  CP0 inst in uop,    7. ERET
+    .issue_excode(issue_excode),
+    .issue_uop(issue_uop),
+    .issue_meta(issue_meta), // Immediate 或其他信息
+    .issue_pc(issue_pc),
+    .issue_j(issue_j),    // 分支预测跳转你地址
+    .issue_delay_slot(issue_delay_slot),   // 是否延迟槽指令
+    
+    // 状态获取
+    .regheap_status(regheap_status),     // r0~r55
+    .alu_status(component_status[5:0]),
+    .branch_status(component_status[6]),
+    .muldiv_status(component_status[7]),
+    .buffer_status(buffer_status)       // Reorder buffer 使用状态
+);
+
+/* ========= EXE Engine =========*/
+wire        cp0_ce; // to cp0
+wire[2:0]   cp0_inst;
+wire[4:0]   cp0_reg;
+wire[31:0]  cp0_putval;
+wire        cp0_exception;
+wire[4:0]   cp0_excode;
+wire[31:0]  cp0_exc_pc;
+wire[31:0]  cp0_mem_vaddr;
+wire        cp0_exc_ds;
+
+wire[31:0]  cp0_result;// from cp0
+wire[31:0]  cp0_EBASE;
+wire[31:0]  cp0_SR;
+
+
+exe_top exec_inst(
+    .clk(clk_50M),
+    .rst(reset_btn),
+    
+    .issue(issue),
+    .issue_buffer_id(issue_buffer_id),
+    .issue_vec({issue_delay_slot, issue_j, issue_pc, issue_meta, issue_uop, issue_excode, issue_commit_op, issue_rj_id, issue_rj, issue_ri_id, issue_ri, assign_component_id, assign_component, assign_reg_id, issue_reg, assign_reg}),
+    
+    .commit(commit),
+    .commit_reg(commit_reg),
+    .commit_regheap(commit_regheap),
+    
+    .regheap_status(regheap_status),
+    .component_status(component_status),
+    .buffer_status(buffer_status),
+    
+    .mem_ce(mem_ce),
+    .mem_write(mem_write),
+    .mem_vaddr(mem_vaddr),
+    .mem_bytemode(mem_bytemode),
+    .mem_write_data(mem_data_write),
+    .mem_read_data(mem_data_read),
+    .mem_avail(mem_avail),
+    .mem_tlbmiss(mem_tlbmiss),
+    .mem_modify_ex(mem_modify_ex),      
+    
+    .hardint(),
+    
+    // cp0
+    .cp0_ce(cp0_ce),
+    .cp0_inst(cp0_inst),
+    .cp0_reg(cp0_reg),
+    .cp0_putval(cp0_putval),
+    .cp0_exception(cp0_exception),
+    .cp0_excode(cp0_excode),
+    .cp0_exc_pc(cp0_exc_pc),
+    .cp0_mem_vaddr(cp0_mem_vaddr),
+    .cp0_exc_ds(cp0_exc_ds),
+    .cp0_result(cp0_result),
+    .cp0_EBASE(cp0_EBASE),
+    .cp0_SR(cp0_SR),
+    
+    // jump forward
+    .clear_out(clear),
+    .pc_jump(),
+    .pc_jump_addr(pc_jump_addr)  
+);
+
+/* ========= CP0 ========= */
+wire[31:0]  cp0_COUNTER;
+wire[31:0]  cp0_COMPARE;
+wire[5:0]   ip_7_2;
+
+
+
+cp0 cp0_instance (
+    .clk(clk_50M),
+    .rst(reset_btn),
+    
+    .cp0_entryhi(cp0_ENTRYHI),
+    .cp0_ebase(cp0_EBASE),
+    .cp0_status(cp0_SR),
+    .cp0_counter(cp0_COUNTER),
+    .cp0_compare(cp0_COMPARE),
+    
+    .cp0_ce(cp0_ce),
+    .cp0_inst(cp0_inst),
+    .cp0_reg(cp0_reg),
+    .cp0_putval(cp0_putval),
+    .cp0_result(cp0_result),
+    
+    .cp0_exception(cp0_exception),
+    .cp0_excode(cp0_excode),
+    .cp0_exc_pc(cp0_exc_pc),
+    .cp0_mem_vaddr(cp0_mem_vaddr),
+    .cp0_exc_ds(cp0_exc_ds),
+    
+    // Interrupt
+    .ip_7_2(ip_7_2),
+    
+    // TLBR
+    .tlbr_qe(tlbr_qe),
+    .tlbr_index(tlbr_index),
+    .tlbr_result(tlbr_result),
+    
+    // TLBP
+    .tlbp_qe(tlbp_qe),
+    .tlbp_result(tlbp_result),
+    
+    // TLB 修改
+    .tlb_we(tlb_we),
+    .tlb_write_index(tlb_write_index),
+    .tlb_write_entry(tlb_write_entry)    // { EntryHi, EntryLo0, EntryLo1 }
+);
+
 
 // PLL分频示例
 wire locked, clk_10M, clk_20M;

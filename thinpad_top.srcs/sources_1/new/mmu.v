@@ -42,11 +42,11 @@ module mmu(
     
     // TLBP
     input wire          tlbp_qe,
-    output reg[3:0]     tlbp_result,
+    output reg[4:0]     tlbp_result,
     
     // TLBR
     input wire          tlbr_qe,
-    input wire[4:0]     tlbr_index,
+    input wire[3:0]     tlbr_index,
     output reg[95:0]    tlbr_result,
     
     // TLB ĞŞ¸Ä

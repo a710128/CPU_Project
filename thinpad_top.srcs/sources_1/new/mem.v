@@ -194,14 +194,14 @@ end
 /* =================== Assign =================== */
 assign base_ram_data = o_base_ram_oe_n ? o_base_ram_data : 32'bz;
 assign base_ram_addr = o_base_ram_addr;
-assign base_ram_be_n = ~o_bytemode;
+assign base_ram_be_n = ~o_bytemode[3:0];
 assign base_ram_ce_n = o_base_ram_ce_n;
 assign base_ram_oe_n = o_base_ram_oe_n;
 assign base_ram_we_n = o_base_ram_we_n;
 
 assign ext_ram_data = o_ext_ram_oe_n ? o_ext_ram_data : 32'bz;
 assign ext_ram_addr = o_ext_ram_addr;
-assign ext_ram_be_n = ~o_bytemode;
+assign ext_ram_be_n = ~o_bytemode[3:0];
 assign ext_ram_ce_n = o_ext_ram_ce_n;
 assign ext_ram_oe_n = o_ext_ram_oe_n;
 assign ext_ram_we_n = o_ext_ram_we_n;
@@ -222,7 +222,7 @@ assign flash_byte_n = 1;
 assign leds = o_leds;
 assign dpy_number = o_dpy_number;
 
-assign  if_data = o_mem_req ? 32'b0 : output_data;
+assign  if_data = o_mem_req ? 32'b0 : output_data_n;
 assign  mem_data = o_mem_req ? output_data : 32'b0;
 assign  if_skip = o_mem_req;
 assign  mem_valid =  (o_cnt_req == 0) ? 1 : 0;
