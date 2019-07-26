@@ -113,6 +113,7 @@ always @(posedge clk) begin
         pc <= 0;
         jump <= 0;
         ds <= 0;
+        used <= 0;
     end
     else begin
         result_reg <= i_result_reg;
@@ -133,15 +134,17 @@ always @(posedge clk) begin
         ds <= i_ds;
         used <= i_used;
         
-        if (i_comp_avail) begin // 不需要再关注计算元件
-            component <= 0;
-        end
-        
-        if (i_comp_cmeta) begin
-            meta <= i_nw_meta;
-        end
-        if (i_comp_exception) begin
-            excode <= i_nw_excode;
+        if (!issue) begin
+            if (i_comp_avail) begin // 不需要再关注计算元件
+                component <= 0;
+            end
+            
+            if (i_comp_cmeta) begin
+                meta <= i_nw_meta;
+            end
+            if (i_comp_exception) begin
+                excode <= i_nw_excode;
+            end
         end
     end
 end

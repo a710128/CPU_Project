@@ -119,7 +119,7 @@ always @(posedge clk) begin
                 
             end
             else begin  // »¹Î´Íê³É
-                if (set_commit_wb) begin
+                if (commit_wb) begin
                     if (force_update) begin
                         available <= 1;
                         val <= force_value;

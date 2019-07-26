@@ -99,7 +99,7 @@ assign cp0[11] = cp0_regs[11];
 assign cp0[12] = cp0_regs[12];
 assign cp0[13] = {cp0_regs[13][31:16], ip_7_2, cp0_regs[13][9:0]};  // Cause
 assign cp0[14] = cp0_regs[14];
-assign cp0[15] = cp0_regs[15];
+assign cp0[15] = cp0_regs[15];  // EBASE
 assign cp0[16] = cp0_regs[16];
 assign cp0[17] = cp0_regs[17];
 assign cp0[18] = cp0_regs[18];
@@ -139,7 +139,7 @@ always @(posedge clk) begin
         cp0_regs[12] <= 0;  // SR
         cp0_regs[13] <= 0;
         cp0_regs[14] <= 0;
-        cp0_regs[15] <= 0;
+        cp0_regs[15] <= 32'h80001000;  // EBASE
         cp0_regs[16] <= 0;
         cp0_regs[17] <= 0;
         cp0_regs[18] <= 0;
@@ -193,6 +193,9 @@ always @(posedge clk) begin
                     tlbwe <= 1;
                     tlb_write_index <= cp0[INDEX][3:0];
                     tlb_write_entry <= { cp0[ENTRYHI], cp0[ENTRYL0], cp0[ENTRYL1] };
+                end
+                3'd6: begin // ERET
+                    cp0_regs[STATUS][1] <= 1'b0;
                 end
             endcase
         end

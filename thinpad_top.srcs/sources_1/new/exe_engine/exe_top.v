@@ -28,6 +28,7 @@ module exe_top(
     input wire[2:0]     issue_buffer_id,
     input wire[140:0]   issue_vec,
     
+    output wire         buffer_shift,
     output wire         commit,
     output wire[4:0]    commit_reg,
     output wire[5:0]    commit_regheap,
@@ -65,8 +66,13 @@ module exe_top(
     // jump forward
     output wire         clear_out,
     output reg          pc_jump,
-    output reg[31:0]    pc_jump_addr
+    output reg[31:0]    pc_jump_addr,
     
+    
+    // feed bp
+    output wire         feed_bp,
+    output wire[31:0]   feed_bp_pc,
+    output wire[31:0]   feed_bp_dst
 );
 
 
@@ -98,6 +104,8 @@ wire[4:0]   component_excode[7:0];
 
 wire        buffer_commit;
 wire        buffer_commit_upd;
+
+assign buffer_shift = buffer_commit;
 assign commit = buffer_commit & buffer_commit_upd;
 
 // Generate Reg Heap
@@ -186,9 +194,9 @@ generate
             
             // 获取寄存器状态
             .ri_val(req_ri[i] ?  regheap_val[req_riid[i]] : 32'b0 ),
-            .ri_avail(req_ri[i] ? regheap_avail[req_riid[i]] : 32'b0),
+            .ri_avail(req_ri[i] ? regheap_avail[req_riid[i]] : 1'b1),
             .rj_val(req_rj[i] ?  regheap_val[req_rjid[i]] : 32'b0 ),
-            .rj_avail(req_rj[i] ? regheap_avail[req_rjid[i]] : 32'b0),
+            .rj_avail(req_rj[i] ? regheap_avail[req_rjid[i]] : 1'b1),
             
             // 输出状态
             .used(component_status[i]),
@@ -220,9 +228,9 @@ branch branch_inst(
     
     // 获取寄存器状态
     .ri_val(req_ri[6] ?  regheap_val[req_riid[6]] : 32'b0 ),
-    .ri_avail(req_ri[6] ? regheap_avail[req_riid[6]] : 32'b0),
+    .ri_avail(req_ri[6] ? regheap_avail[req_riid[6]] : 1'b1),
     .rj_val(req_rj[6] ?  regheap_val[req_rjid[6]] : 32'b0 ),
-    .rj_avail(req_rj[6] ? regheap_avail[req_rjid[6]] : 32'b0),
+    .rj_avail(req_rj[6] ? regheap_avail[req_rjid[6]] : 1'b1),
     
     // 输出状态
     .used(component_status[6]),
@@ -254,9 +262,9 @@ muldiv muldiv_inst(
     
     // 获取寄存器状态
     .ri_val(req_ri[7] ?  regheap_val[req_riid[7]] : 32'b0 ),
-    .ri_avail(req_ri[7] ? regheap_avail[req_riid[7]] : 32'b0),
+    .ri_avail(req_ri[7] ? regheap_avail[req_riid[7]] : 1'b1),
     .rj_val(req_rj[7] ?  regheap_val[req_rjid[7]] : 32'b0 ),
-    .rj_avail(req_rj[7] ? regheap_avail[req_rjid[7]] : 32'b0),
+    .rj_avail(req_rj[7] ? regheap_avail[req_rjid[7]] : 1'b1),
     
     // 输出状态
     .used(component_status[7]),
@@ -279,26 +287,18 @@ muldiv muldiv_inst(
 
 /* ============ ROB ============ */
 wire[141:0] rob_inps[8:0];
-reg[141:0]  rob_inp_reg[7:0];
+// reg[141:0]  rob_inp_reg[7:0];
 assign rob_inps[8] = 141'b0;
-assign rob_inps[7] = rob_inp_reg[7];
-assign rob_inps[6] = rob_inp_reg[6];
-assign rob_inps[5] = rob_inp_reg[5];
-assign rob_inps[4] = rob_inp_reg[4];
-assign rob_inps[3] = rob_inp_reg[3];
-assign rob_inps[2] = rob_inp_reg[2];
-assign rob_inps[1] = rob_inp_reg[1];
-assign rob_inps[0] = rob_inp_reg[0];
-assign commit_buffer_regid = rob_inp_reg[0][11:6];
+assign commit_buffer_regid = rob_inps[0][11:6];
 
-assign buffer_status[7] =  rob_inp_reg[7][141];
-assign buffer_status[6] =  rob_inp_reg[6][141];
-assign buffer_status[5] =  rob_inp_reg[5][141];
-assign buffer_status[4] =  rob_inp_reg[4][141];
-assign buffer_status[3] =  rob_inp_reg[3][141];
-assign buffer_status[2] =  rob_inp_reg[2][141];
-assign buffer_status[1] =  rob_inp_reg[1][141];
-assign buffer_status[0] =  rob_inp_reg[0][141];
+assign buffer_status[7] =  rob_inps[7][141];
+assign buffer_status[6] =  rob_inps[6][141];
+assign buffer_status[5] =  rob_inps[5][141];
+assign buffer_status[4] =  rob_inps[4][141];
+assign buffer_status[3] =  rob_inps[3][141];
+assign buffer_status[2] =  rob_inps[2][141];
+assign buffer_status[1] =  rob_inps[1][141];
+assign buffer_status[0] =  rob_inps[0][141];
 
 generate
     for (i = 7; i > 0; i = i - 1)
@@ -319,7 +319,7 @@ generate
             .i_comp_exception( inp[12] ? component_status_exc[ inp[15:13] ] : 1'b0),
             .i_nw_excode( inp[12] ? component_excode[ inp[15:13] ] : 5'b0 ),
             
-            .rob_oup( rob_inp_reg[i] )
+            .rob_oup( rob_inps[i] )
         );
     end
 endgenerate
@@ -337,10 +337,12 @@ wire[3:0]   commit_buffer_status;
 wire        commit_buffer_tlb_exception;
 wire        commit_buffer_normal_exception;
 
+wire        commit_pc_imm;
 wire        commit_pc_ds;
 wire        commit_pc_addr;
 wire        commit_feed_bp;
 wire[31:0]  commit_bp_res;
+
 
 reg         ds_pc;          // 在提交延迟槽时修改PC
 reg[31:0]   ds_pc_addr;
@@ -362,7 +364,7 @@ rob_commit rob_commit_inst(
     .i_comp_exception( rob_commit_inp[12] ? component_status_exc[ rob_commit_inp[15:13] ] : 1'b0 ),
     .i_nw_excode( rob_commit_inp[12] ? component_excode[ rob_commit_inp[15:13] ] : 5'b0 ),
     
-    .rob_oup( rob_inp_reg[0] ),
+    .rob_oup( rob_inps[0] ),
     
     // EXT
     .commit(buffer_commit),
@@ -373,7 +375,7 @@ rob_commit rob_commit_inst(
     .result_avail( commit_buffer_reg ? regheap_avail[commit_buffer_reg_id] : 1'b1),           // 是否已经计算出结果
     .ri_val( commit_buffer_ri ? regheap_val[commit_buffer_ri_id] : 32'b0 ),
     .rj_val( commit_buffer_rj ? regheap_val[commit_buffer_rj_id] : 32'b0 ),        
-    .i_status( commit_buffer_status ),               // 状态
+    .i_status( buffer_commit ? 4'd0 : commit_buffer_status ),               // 状态
     .o_status( commit_buffer_status ),
     
     .intq( hardint != 6'b000000 ),                   // 是否有外部中断
@@ -382,6 +384,7 @@ rob_commit rob_commit_inst(
     .cp0_SR ( cp0_SR ),
     
     // Branch
+    .change_pc_imm( commit_pc_imm ),
     .change_pc_ds( commit_pc_ds ),           // 在下一个延迟槽时修改PC
     .change_pc_to( commit_pc_addr ),
     .feed_to_bp( commit_feed_bp ),             // 是否更新分支预测表
@@ -423,39 +426,65 @@ rob_commit rob_commit_inst(
 );
 
 assign cp0_exception = commit_buffer_tlb_exception | commit_buffer_normal_exception;
-assign cp0_excode = rob_inp_reg[0][37:33];
-assign cp0_exc_pc = rob_inp_reg[0][107:76];
-assign cp0_mem_vaddr = (rob_inp_reg[0][32:30] == 3'b0) ? rob_inp_reg[0][107:76] :  mem_vaddr;
-assign cp0_exc_ds = rob_inp_reg[0][140];
+assign cp0_excode = rob_inps[0][37:33];
+assign cp0_exc_pc = rob_inps[0][107:76];
+assign cp0_mem_vaddr = (rob_inps[0][32:30] == 3'b0) ? rob_inps[0][107:76] :  mem_vaddr;
+assign cp0_exc_ds = rob_inps[0][140];
+
+assign feed_bp = commit_feed_bp;
+assign feed_bp_dst = commit_bp_res;
+assign feed_bp_pc = rob_inps[0][107:76];
+
 
 always @(*) begin
     if (commit_buffer_tlb_exception) begin
-        ds_pc <= 0;
         clear <= 1;
         pc_jump <= 1;
         pc_jump_addr <= cp0_EBASE;
     end
     else if (commit_buffer_normal_exception) begin
-        ds_pc <= 0;
         clear <= 1;
         pc_jump <= 1;
         pc_jump_addr <= cp0_EBASE + 32'h180;
     end
-    else if (buffer_commit && rob_inp_reg[0][140] && ds_pc) begin
-        ds_pc <= 0;
+    else if (commit_pc_imm) begin
+        clear <= 1;
+        pc_jump <= 1;
+        pc_jump_addr <= commit_pc_addr;
+    end
+    else if (buffer_commit && rob_inps[0][140] && ds_pc) begin
         clear <= 1;
         pc_jump <= 1;
         pc_jump_addr <= ds_pc_addr;
     end
     else if (commit_pc_ds) begin
         clear <= 0;
-        ds_pc <= 1;
-        ds_pc_addr <= commit_pc_addr;
         pc_jump <= 0;
     end
     else begin
         pc_jump <= 0;
         clear <= 0;
+    end
+end
+
+always @(posedge clk) begin
+    if (commit_buffer_tlb_exception) begin
+        ds_pc <= 0;
+    end
+    else if (commit_buffer_normal_exception) begin
+        ds_pc <= 0;
+    end
+    else if (commit_pc_imm) begin
+        ds_pc <= 0;
+    end
+    else if (buffer_commit && rob_inps[0][140] && ds_pc) begin
+        ds_pc <= 0;
+    end
+    else if (commit_pc_ds) begin
+        ds_pc <= 1;
+        ds_pc_addr <= commit_pc_addr;
+    end
+    else begin
     end
 end
 

@@ -34,6 +34,7 @@ module decoder(
     input wire          is_delay_slot,      // 是否为延迟槽指令
     
     // 指令提交（更新寄存器状态）
+    input wire          buffer_shift,
     input wire          commit,
     input wire[4:0]     commit_reg,
     input wire[5:0]     commit_regheap,
@@ -68,7 +69,7 @@ module decoder(
 );
 
 wire[7:0]   next_buffer_status;     // 下个周期开始时的使用状态（若commit则位移否则不变）
-assign next_buffer_status = commit ? {1'b0, buffer_status[7:1]} : buffer_status;
+assign next_buffer_status = buffer_shift ? {1'b0, buffer_status[7:1]} : buffer_status;
 
 reg[5:0]    reg_commit[31:0];
 reg[5:0]    reg_active[31:0];
@@ -231,7 +232,7 @@ convt64to6 convt64to6_other (
 );
 
 convt64to6 convt64to6_unused_reg (
-    .inp(regheap_status),
+    .inp(~regheap_status),
     .out(unused_reg),
     .found()
 );
@@ -353,6 +354,25 @@ end
 always @(*) begin
     if (rst || clear) begin
         // 如果 rst 或者 clear 则不进行操作
+        cant_issue <= 0;
+        issue <= 0;
+        issue_buffer_id <= 0;
+        issue_reg <= 0;
+        assign_reg <= 0;
+        assign_reg_id <= 0;
+        assign_component <= 0;
+        assign_component_id <= 0;
+        issue_ri <= 0;
+        issue_ri_id <= 0;
+        issue_rj <= 0;
+        issue_rj_id <= 0;
+        issue_commit_op <= 0;
+        issue_excode <= 0;
+        issue_uop <= 0;
+        issue_meta <= 0;
+        issue_pc <= 0;
+        issue_j <= 0;
+        issue_delay_slot <= 0;
     end
     else if (noinst) begin       // 没有指令
         cant_issue <= 0;    // 可以发射
@@ -394,9 +414,11 @@ always @(*) begin
                     assign_reg_id <= unused_reg;
                     assign_component <= 1;  // 需要关联运算单元
                     assign_component_id <= unused_alu;
-                    issue_commit_op <=  1;  // 无特殊指令
+                    issue_commit_op <=  0;  // 无特殊指令
                     issue_excode <= 0;
                     issue_uop <= alu_opid;
+                    issue_ri_id <= 0;
+                    issue_rj_id <= 0;
                     
                     case (alu_opid)
                         6'd0: begin // LUI
@@ -502,12 +524,14 @@ always @(*) begin
                         issue_ri <= 1;
                         issue_ri_id <= reg_active[inst[25:21]];
                         issue_rj <= 0;
+                        issue_meta <= 32'b0;
                     end
                     6'd11: begin // JR
                         assign_reg <= 0;
                         issue_ri <= 1;
                         issue_ri_id <= reg_active[inst[25:21]];
                         issue_rj <= 0;
+                        issue_meta <= 32'b0;
                     end
                     default: ;
                     endcase
@@ -527,7 +551,7 @@ always @(*) begin
                     assign_reg <= 0;            // 不回写寄存器
                     assign_component <= 1;
                     assign_component_id <= 7;   // MULDIV
-                    issue_commit_op <= 5;
+                    issue_commit_op <= 5;       // Copy From MULDIV
                     issue_excode <= 0;
                     issue_meta <= 0;            // 乘除法均无立即数
 
@@ -559,7 +583,7 @@ always @(*) begin
                         issue_ri_id <= reg_active[inst[25:21]];
                         issue_rj <= 1;
                         issue_rj_id <= reg_active[inst[20:16]];
-                        issue_commit_op <= 2;
+                        issue_commit_op <= 2;   // MEM
                         issue_excode <= 0;
                         issue_meta <= simm;
                     end
@@ -570,7 +594,7 @@ always @(*) begin
                         issue_ri <= 1;
                         issue_ri_id <= reg_active[inst[25:21]];
                         issue_rj <= 0;
-                        issue_commit_op <= 2;
+                        issue_commit_op <= 2;   // MEM
                         issue_excode <= 0;
                         issue_meta <= simm;
                     end
@@ -578,14 +602,14 @@ always @(*) begin
                         assign_reg <= 0;
                         issue_ri <= 0;
                         issue_rj <= 0;
-                        issue_commit_op <= 6;
+                        issue_commit_op <= 6;   // CP0
                         issue_excode <= 0;
                     end
                     6'd12: begin    // ERET
                         assign_reg <= 0;
                         issue_ri <= 0;
                         issue_rj <= 0;
-                        issue_commit_op <= 7;
+                        issue_commit_op <= 7;   // ERET
                         issue_excode <= 0;
                     end
                     6'd13: begin    // MFC0
@@ -594,7 +618,7 @@ always @(*) begin
                         assign_reg_id <= unused_reg;
                         issue_ri <= 0;
                         issue_rj <= 0;
-                        issue_commit_op <= 6;
+                        issue_commit_op <= 6;   // CP0
                         issue_excode <= 0;
                         issue_meta <= {27'b0, inst[15:11]};
                     end
@@ -603,7 +627,7 @@ always @(*) begin
                         issue_ri <= 1;
                         issue_ri_id <= reg_active[inst[20:16]];
                         issue_rj <= 0;
-                        issue_commit_op <= 6;
+                        issue_commit_op <= 6;   // CP0
                         issue_excode <= 0;
                         issue_meta <= {27'b0, inst[15:11]};
                     end
@@ -611,14 +635,14 @@ always @(*) begin
                         assign_reg <= 0;
                         issue_ri <= 0;
                         issue_rj <= 0;
-                        issue_commit_op <= 0;
+                        issue_commit_op <= 0;   //  nothing
                         issue_excode <= 5'h09;
                     end
                     6'd16: begin    // SYSCALL
                         assign_reg <= 0;
                         issue_ri <= 0;
                         issue_rj <= 0;
-                        issue_commit_op <= 0;
+                        issue_commit_op <= 0;   // nothing
                         issue_excode <= 5'h08;
                     end
                     6'd17: begin    // MTHI
@@ -626,7 +650,7 @@ always @(*) begin
                         issue_ri <= 1;
                         issue_ri_id <= reg_active[inst[25:21]]; 
                         issue_rj <= 0;
-                        issue_commit_op <= 4;
+                        issue_commit_op <= 4;   // MFHI/LO
                         issue_excode <= 0;
                         issue_meta <= 0;
                     end
@@ -635,7 +659,7 @@ always @(*) begin
                         issue_ri <= 1;
                         issue_ri_id <= reg_active[inst[25:21]]; 
                         issue_rj <= 0;
-                        issue_commit_op <= 4;
+                        issue_commit_op <= 4;   // MFHI/LO
                         issue_excode <= 0;
                         issue_meta <= 1;
                     end
@@ -645,7 +669,7 @@ always @(*) begin
                         assign_reg_id <= unused_reg;
                         issue_ri <= 0;
                         issue_rj <= 0;
-                        issue_commit_op <= 3;
+                        issue_commit_op <= 3;   // MTHI/LO
                         issue_excode <= 0;
                         issue_meta <= 1;
                     end
@@ -655,7 +679,7 @@ always @(*) begin
                         assign_reg_id <= unused_reg;
                         issue_ri <= 0;
                         issue_rj <= 0;
-                        issue_commit_op <= 3;
+                        issue_commit_op <= 3;   // MTHI/LO
                         issue_excode <= 0;
                         issue_meta <= 0;
                     end
@@ -686,8 +710,8 @@ module convt64to6(
     output reg          found
 );
 
-reg[7:0]    subfd;
-reg[2:0]    subot[7:0];
+wire[7:0]       subfd;
+wire[2:0]       subot[7:0];
 
 generate
     genvar i;
@@ -705,12 +729,12 @@ always @(*) begin
     found <= 1;
     if (subfd[0])  out <= {3'd0, subot[0]};
     else if (subfd[1])  out <= {3'd1, subot[1]};
-    else if (subfd[2])  out <= {3'd2, subot[1]};
-    else if (subfd[3])  out <= {3'd3, subot[1]};
-    else if (subfd[4])  out <= {3'd4, subot[1]};
-    else if (subfd[5])  out <= {3'd5, subot[1]};
-    else if (subfd[6])  out <= {3'd6, subot[1]};
-    else if (subfd[7])  out <= {3'd7, subot[1]};
+    else if (subfd[2])  out <= {3'd2, subot[2]};
+    else if (subfd[3])  out <= {3'd3, subot[3]};
+    else if (subfd[4])  out <= {3'd4, subot[4]};
+    else if (subfd[5])  out <= {3'd5, subot[5]};
+    else if (subfd[6])  out <= {3'd6, subot[6]};
+    else if (subfd[7])  out <= {3'd7, subot[7]};
     else found <= 0;
 end
 

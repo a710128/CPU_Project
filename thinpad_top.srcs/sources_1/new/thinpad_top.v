@@ -80,6 +80,16 @@ module thinpad_top(
     output wire video_de           //行数据有效信号，用于区分消隐区
 );
 wire    clear;
+reg     rst;
+
+always @(posedge clk_50M) begin
+    if (reset_btn) begin
+        rst <= 1;
+    end
+    else begin
+        rst <= 0;
+    end
+end
 
 /* ================ UART ================= */
 wire    uart_data_read, uart_data_write;
@@ -87,7 +97,7 @@ wire    uart_data_ready, uart_busy;
 wire[7:0]   uart_data_in,   uart_data_out;
 uart uart_inst (
     .clk_50M(clk_50M),
-    .rst(reset_btn),
+    .rst(rst),
     .txd(txd),
     .rxd(rxd),
     .uart_data_read(uart_data_read),
@@ -100,7 +110,7 @@ uart uart_inst (
 
 /* ================== DPY ================= */
 // 7段数码管译码器演示，将number用16进制显示在数码管上面
-reg[7:0] dpy_number;
+wire[7:0] dpy_number;
 SEG7_LUT segL(.oSEG1(dpy0), .iDIG(dpy_number[3:0])); //dpy0是低位数码管
 SEG7_LUT segH(.oSEG1(dpy1), .iDIG(dpy_number[7:4])); //dpy1是高位数码管
 
@@ -138,7 +148,7 @@ assign mem_noexc = (mem_exception == 2'd0) ? 1'b1 : 1'b0;
 
 mmu mmu_inst(
     .clk(clk_50M),
-    .rst(reset_btn),
+    .rst(rst),
     
     // Global
     .current_entryHi(cp0_ENTRYHI),
@@ -185,7 +195,7 @@ wire[31:0]  mem_data_read;
 
 mem mem_inst (
     .clk_50M(clk_50M),
-    .rst(reset_btn),
+    .rst(rst),
 
     // Interface
     .if_ce(if_ce),
@@ -273,11 +283,20 @@ assign if_addr = next_PC_paddr;
 reg         i_if_id_tlbmiss;
 reg[31:0]   i_if_id_pc;
 wire        i_if_id_noinst;     // no instruction
-assign i_if_id_noinst = if_skip;
+wire        i_if_id_delay_slot;
+reg         i_if_id_rst;
+assign i_if_id_noinst = if_skip | i_if_id_rst;
+
 
 always @(posedge clk_50M) begin
     i_if_id_tlbmiss <= next_PC_tlbmiss;
     i_if_id_pc <= next_PC_vaddr;
+    if (rst || clear) begin
+        i_if_id_rst <= 1;
+    end
+    else begin
+        i_if_id_rst <= 0;
+    end
 end
 
 /* ============ Fetch/Decode ============= */
@@ -286,26 +305,32 @@ reg[31:0]   o_if_id_inst;       // To decode, branch_predictor
 reg         o_if_id_tlbmiss;    // To decode
 reg[31:0]   o_if_id_pc;         // To decode, branch_predictor
 reg         o_if_id_noinst;     // To decode, branch_predictor
-reg         o_if_id_ifskip;     // To branch_predictor
+reg         o_if_id_ifskip;     // To mutex
+reg         o_if_id_delay_slot;
 wire[31:0]  bp_jump;            // From branch predictor
 wire        bp_delay_slot;      // From branch predictor
 
+wire        pc_jump;
 wire[31:0]  pc_jump_addr;            // 回传实际跳转地址
 
+wire        cant_issue;         // 资源不足无法发射
+
 always @(posedge clk_50M) begin
-    if (clear) begin
+    if (rst || clear) begin
         o_if_id_tlbmiss <= 0;
-        o_if_id_pc <= pc_jump_addr - 32'h4;
+        o_if_id_pc <= 0;
         o_if_id_inst <= 0;
         o_if_id_noinst <= 1;
         o_if_id_ifskip <= 0;
+        o_if_id_delay_slot <= 0;
     end
-    else begin
+    else if (!cant_issue) begin
         o_if_id_tlbmiss <= i_if_id_tlbmiss;
         o_if_id_pc <= i_if_id_pc;
         o_if_id_inst <= if_data;
         o_if_id_noinst <= i_if_id_noinst;
         o_if_id_ifskip <= if_skip;
+        o_if_id_delay_slot <= i_if_id_delay_slot;
     end
 end
 
@@ -317,15 +342,18 @@ wire[63:0]  regheap_status;
 wire[7:0]   component_status;
 wire[7:0]   buffer_status;
 
-wire        cant_issue, issue, assign_reg, assign_component, issue_ri, issue_rj, issue_delay_slot;  // to exe
+wire        issue, assign_reg, assign_component, issue_ri, issue_rj, issue_delay_slot;  // to exe
 wire[2:0]   issue_buffer_id, assign_component_id, issue_commit_op;
 wire[4:0]   issue_reg, issue_excode;
 wire[5:0]   assign_reg_id, issue_ri_id, issue_rj_id, issue_uop;
 wire[31:0]  issue_meta, issue_pc, issue_j;
+wire        buffer_shift;
+
+assign bp_delay_slot = o_if_id_delay_slot;
 
 decoder decoder_inst(
     .clk(clk_50M),
-    .rst(reset_btn),
+    .rst(rst),
     .clear(clear),              // 清空流水线以及当前指令
     
     // 指令输入
@@ -337,6 +365,7 @@ decoder decoder_inst(
     .is_delay_slot(bp_delay_slot),      // 是否为延迟槽指令
     
     // 指令提交（更新寄存器状态）
+    .buffer_shift(buffer_shift),
     .commit(commit),
     .commit_reg(commit_reg),
     .commit_regheap(commit_regheap),
@@ -387,14 +416,18 @@ wire[31:0]  cp0_SR;
 
 wire[5:0]   hardint;
 
+wire        feed_bp;
+wire[31:0]  feed_bp_pc, feed_bp_res;
+
 exe_top exec_inst(
     .clk(clk_50M),
-    .rst(reset_btn),
+    .rst(rst),
     
     .issue(issue),
     .issue_buffer_id(issue_buffer_id),
     .issue_vec({issue_delay_slot, issue_j, issue_pc, issue_meta, issue_uop, issue_excode, issue_commit_op, issue_rj_id, issue_rj, issue_ri_id, issue_ri, assign_component_id, assign_component, assign_reg_id, issue_reg, assign_reg}),
     
+    .buffer_shift(buffer_shift),
     .commit(commit),
     .commit_reg(commit_reg),
     .commit_regheap(commit_regheap),
@@ -431,8 +464,12 @@ exe_top exec_inst(
     
     // jump forward
     .clear_out(clear),
-    .pc_jump(),
-    .pc_jump_addr(pc_jump_addr)  
+    .pc_jump(pc_jump),
+    .pc_jump_addr(pc_jump_addr),
+    
+    .feed_bp(feed_bp),
+    .feed_bp_pc(feed_bp_pc),
+    .feed_bp_dst(feed_bp_res)
 );
 
 /* ========= CP0 ========= */
@@ -445,7 +482,7 @@ assign hardint = ip_7_2;
 
 cp0 cp0_instance (
     .clk(clk_50M),
-    .rst(reset_btn),
+    .rst(rst),
     
     .cp0_entryhi(cp0_ENTRYHI),
     .cp0_ebase(cp0_EBASE),
@@ -483,5 +520,30 @@ cp0 cp0_instance (
     .tlb_write_entry(tlb_write_entry)    // { EntryHi, EntryLo0, EntryLo1 }
 );
 
+/* ========== branch predicotr =========== */
+wire[31:0]      pred_pc;
+wire[31:0]      pc_mux0;
+assign issue_j = pred_pc;
+assign pc_mux0 = (if_skip || cant_issue) ? i_if_id_pc : pred_pc;
+assign next_PC_vaddr = pc_jump ? pc_jump_addr : pc_mux0;
+
+branch_predictor branch_predictor_inst(
+    .clk(clk_50M),
+    .rst(rst),
+    .clear(clear),
+    
+    .current_entryHI(cp0_ENTRYHI[7:0]),
+    
+    .noinst(o_if_id_noinst),
+    .inst(o_if_id_inst),
+    .pc(i_if_id_pc),
+    
+    .feed_we(feed_bp),
+    .feed_pc(feed_bp_pc),
+    .feed_res(feed_bp_res),
+    
+    .pc_pred(pred_pc),
+    .delay_slot(i_if_id_delay_slot)
+);
 
 endmodule

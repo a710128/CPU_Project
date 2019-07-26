@@ -76,7 +76,7 @@ reg[31:0]   alu_result;
 reg         alu_exc;
 reg[4:0]    alu_excode;
 assign avail = (status == STATUS_FINISHED) ? 1'b1 : 1'b0;
-
+assign result = alu_result;
 
 assign change_meta = 0;
 assign set_nw_meta = 0;

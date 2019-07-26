@@ -154,7 +154,7 @@ assign  data_in[5] = {30'b0, uart_data_ready, uart_busy};
 
 wire[31:0]  output_data_n;
 reg[31:0]   output_data;
-assign  output_data_n = data_in[o_output_sel]; // 0: BASE ram, 1: EXT ram, 2: UART data, 3: flash, 4 UART status 
+assign  output_data_n = data_in[o_output_sel]; // 0: on input, 1: BASE ram, 2: EXT ram, 3: UART data, 4: flash, 5 UART status 
 
 always @(*) begin   // 根据Bytemode调整输出
     case (o_bytemode)
@@ -259,13 +259,13 @@ always @(*) begin
                     end
                     else begin
                         i_cnt_req <= 1;
-                        i_output_sel <= 2;
+                        i_output_sel <= 3;
                         i_uart_data_read <= 1;
                     end
                 end
-                16'h03FC: begin
+                16'h03FC: begin // UART status
                     i_cnt_req <= 0;
-                    i_output_sel <= 4;
+                    i_output_sel <= 5;
                 end
             endcase
         end
@@ -280,7 +280,7 @@ always @(*) begin
                 i_ext_ram_oe_n <= mem_we;
                 i_ext_ram_we_n <= ~mem_we;
                 i_bytemode <= mem_bytemode;
-                i_output_sel <= 1;
+                i_output_sel <= 2;
             end
             else begin
                 // BASE ram
@@ -291,7 +291,7 @@ always @(*) begin
                 i_base_ram_oe_n <= mem_we;
                 i_base_ram_we_n <= ~mem_we;
                 i_bytemode <= mem_bytemode;
-                i_output_sel <= 0;
+                i_output_sel <= 1;
             end
         end
         else if (mem_addr[31:24] == 8'h1E) begin    // FLASH
@@ -302,7 +302,7 @@ always @(*) begin
             i_flash_d <= bytemode_mem_data[15:0];
             i_flash_oe_n <= mem_we;
             i_flash_we_n <= ~mem_we;
-            i_output_sel <= 3;
+            i_output_sel <= 4;
         end
         else if (mem_addr[31:12] == 20'h1FC00) begin // on-chip ROM
             
@@ -322,8 +322,8 @@ always @(*) begin
                     
                     i_ext_ram_oe_n <= 0;
                     i_ext_ram_we_n <= 1;
-                    i_bytemode <= 0;
-                    i_output_sel <= 1;
+                    i_bytemode <= 5'b01111;
+                    i_output_sel <= 2;
                 end
                 else begin
                     // BASE ram
@@ -333,8 +333,8 @@ always @(*) begin
                     
                     i_base_ram_oe_n <= 0;
                     i_base_ram_we_n <= 1;
-                    i_bytemode <= 0;
-                    i_output_sel <= 0;
+                    i_bytemode <= 5'b01111;
+                    i_output_sel <= 1;
                 end
             end
             else if (mem_addr[31:12] == 20'h1FC00) begin // on-chip ROM

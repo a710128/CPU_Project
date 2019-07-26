@@ -79,6 +79,9 @@ reg[31:0]   brc_nw_meta;
 assign avail = (status == STATUS_FINISHED) ? 1'b1 : 1'b0;
 assign exc = 1'b0;
 assign excode = 0;
+assign result = brc_result;
+assign change_meta = brc_set_meta;
+assign set_nw_meta = brc_nw_meta;
 
 always @(posedge clk) begin
     if (rst || clear) begin

@@ -42,12 +42,12 @@ module mmu(
     
     // TLBP
     input wire          tlbp_qe,
-    output reg[4:0]     tlbp_result,
+    output wire[4:0]    tlbp_result,
     
     // TLBR
     input wire          tlbr_qe,
     input wire[3:0]     tlbr_index,
-    output reg[95:0]    tlbr_result,
+    output wire[95:0]   tlbr_result,
     
     // TLB ÐÞ¸Ä
     input wire          tlb_we,
@@ -55,9 +55,9 @@ module mmu(
     input wire[95:0]    tlb_write_entry    // { EntryHi, EntryLo0, EntryLo1 }
 );
 
-reg         tlb_qe1;
-reg[31:0]   tlb_result1;
-reg         tlb_miss1;
+reg             tlb_qe1;
+wire[31:0]      tlb_result1;
+wire            tlb_miss1;
 
 always @(*) begin
     if (if_qe) begin
@@ -80,9 +80,9 @@ always @(*) begin
 end
 
 
-reg         tlb_qe2;
-reg[31:0]   tlb_result2;
-reg[1:0]    tlb_exception; // {dirty, miss}
+reg             tlb_qe2;
+wire[31:0]      tlb_result2;
+wire[1:0]       tlb_exception; // {dirty, miss}
 
 always @(*) begin
     if (mem_qe) begin

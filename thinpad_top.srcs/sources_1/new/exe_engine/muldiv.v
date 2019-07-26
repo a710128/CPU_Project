@@ -54,12 +54,12 @@ module muldiv(
     output wire[63:0]   muldiv_result
 );
 
-reg[3:0]    status;
+reg[3:0]        status;
 
-reg         alu_ri, alu_rj;
-reg[5:0]    alu_riid, alu_rjid;
-reg[5:0]    alu_uop;
-reg[63:0]   long_result[3:0];
+reg             alu_ri, alu_rj;
+reg[5:0]        alu_riid, alu_rjid;
+reg[5:0]        alu_uop;
+wire[63:0]      long_result[3:0];
 
 assign used = (status == 0) ? 1'b0 : 1'b1;
 assign ri = alu_ri;

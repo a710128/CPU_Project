@@ -28,8 +28,8 @@ module rob_commit(
     
     input wire          issue,
     
-    input wire[109:0]   issue_inp,     
-    input wire[110:0]   rob_inp,
+    input wire[140:0]   issue_inp,     
+    input wire[141:0]   rob_inp,
     
     input wire          i_comp_avail,
     input wire          i_comp_cmeta,
@@ -37,7 +37,7 @@ module rob_commit(
     input wire          i_comp_exception,
     input wire[4:0]     i_nw_excode,
     
-    output wire[110:0]  rob_oup,
+    output wire[141:0]  rob_oup,
     
     // EXT
     output reg          commit,
@@ -56,6 +56,7 @@ module rob_commit(
     output reg          normal_exc,
     input wire[31:0]    cp0_SR,
     // Branch
+    output reg          change_pc_imm,
     output reg          change_pc_ds,           // 在下一个延迟槽时修改PC
     output reg[31:0]    change_pc_to,
     output reg          feed_to_bp,             // 是否更新分支预测表
@@ -101,6 +102,8 @@ parameter STATUS_MEM0 = 1;
 parameter STATUS_CP0_0  = 2;
 parameter STATUS_MEM1 = 3;
 parameter STATUS_CP0_1  = 4;
+parameter STATUS_ERET_0 = 5;
+parameter STATUS_ERET_1 = 6;
 
 wire[141:0]     inp;
 assign inp = issue ? {1'b1, issue_inp} : rob_inp;
@@ -195,288 +198,317 @@ always @(posedge clk) begin
         pc <= 0;
         jump <= 0;
         ds <= 0;
+        used <= 0;
     end
     else begin
-        if (!result_avail) begin    // 还未计算出结果
-            if (intq) begin // 外部中断，在等待结果时候遇到外部中断则直接处理
-                normal_exc <= 1;
-                excode <= 0;
+        result_reg <= i_result_reg;
+        result_reg_id <= i_result_reg_id;
+        result_regheap <= i_result_regheap;
+        component <= i_component;
+        component_id <= i_component_id;
+        ri <= i_ri;
+        ri_id <= i_ri_id;
+        rj <= i_rj;
+        rj_id <= i_rj_id;
+        commit_op <= i_commit_op;
+        excode <= i_excode;
+        uop <= i_uop;
+        meta <= i_meta;
+        pc <= i_pc;
+        jump <= i_j;
+        ds <= i_ds;
+        used <= i_used;
+           
+        // ext
+        if (!issue) begin
+            if (i_comp_avail) begin
+                component <= 0;
             end
-            else begin
-                status <= STATUS_WAIT;
             
-                result_reg <= i_result_reg;
-                result_reg_id <= i_result_reg_id;
-                result_regheap <= i_result_regheap;
-                component <= i_component;
-                component_id <= i_component_id;
-                ri <= i_ri;
-                ri_id <= i_ri_id;
-                rj <= i_rj;
-                rj_id <= i_rj_id;
-                commit_op <= i_commit_op;
-                excode <= i_excode;
-                uop <= i_uop;
-                meta <= i_meta;
-                pc <= i_pc;
-                jump <= i_j;
-                ds <= i_ds;
-                used <= i_used;
-                
-                if (i_comp_avail) begin
-                    component <= 0;
-                end
-                
-                if (i_comp_cmeta) begin
-                    meta <= i_nw_meta;
-                end
-                if (i_comp_exception) begin
-                    excode <= i_nw_excode;
-                end
+            if (i_comp_cmeta) begin
+                meta <= i_nw_meta;
             end
-        end
-        else begin
-            if (i_status == STATUS_WAIT) begin
-                // 刚刚完成计算
-                // 1. 检查异常
-                // 2. 特权判断
-                if (intq) begin // 外部中断，在检查异常阶段遇到中断则直接处理（不提交）
+            if (i_comp_exception) begin
+                excode <= i_nw_excode;
+            end
+        
+            if (!i_used) begin
+            end
+            else if (!result_avail) begin    // 还未计算出结果
+                if (intq) begin // 外部中断，在等待结果时候遇到外部中断则直接处理
                     normal_exc <= 1;
                     excode <= 0;
                 end
-                if (i_excode) begin // 有异常
-                    // （将会触发clear所以不设置status）
-                    if (i_excode == 2) begin
-                        tlb_exc <= 1; // TLB 异常 
+                else begin
+                    status <= STATUS_WAIT;
+                end
+            end
+            else begin
+                if (i_status == STATUS_WAIT) begin
+                    // 刚刚完成计算
+                    // 1. 检查异常
+                    // 2. 特权判断
+                    if (intq) begin // 外部中断，在检查异常阶段遇到中断则直接处理（不提交）
+                        normal_exc <= 1;
+                        excode <= 0;
                     end
-                    else begin
+                    if (i_excode) begin // 有异常
+                        // （将会触发clear所以不设置status）
+                        if (i_excode == 2) begin
+                            tlb_exc <= 1; // TLB 异常 
+                        end
+                        else begin
+                            normal_exc <= 1;
+                        end
+                    end
+                    else if ( !is_kernel && (i_pc >= 32'h80000000) ) begin
+                        excode <= 5'h0a;      // RI
                         normal_exc <= 1;
                     end
-                end
-                else if ( !is_kernel && (i_pc >= 32'h80000000) ) begin
-                    excode <= 5'h0a;      // RI
-                    normal_exc <= 1;
-                end
-                else begin
-                    case (i_commit_op)
-                        3'd0: begin // No op
-                            // 直接提交（不需要修改status）
-                            commit <= 1;
-                            commit_upd <= i_result_reg;
-                            commit_reg <= i_result_reg_id;
-                            commit_regheap <= i_result_regheap;
-                        end
-                        3'd1: begin //  Branch
-                            // 直接提交
-                            commit <= 1;
-                            commit_upd <= i_result_reg;
-                            commit_reg <= i_result_reg_id;
-                            commit_regheap <= i_result_regheap;
-                            // i_meta = Jump TO PC
-                            // change_pc_ds <= 1;
-                            
-                            feed_to_bp <= 1;            // 更新分支预测表
-                            feed_bp_res <= i_meta;
-                            
-                            if (i_meta == i_j) begin // 预测正确
-                                // 啥也不干
+                    else begin
+                        case (i_commit_op)
+                            3'd0: begin // No op
+                                // 直接提交（不需要修改status）
+                                commit <= 1;
+                                commit_upd <= i_result_reg;
+                                commit_reg <= i_result_reg_id;
+                                commit_regheap <= i_result_regheap;
                             end
-                            else begin
-                                if (i_meta[1:0] == 2'b00) begin
-                                    change_pc_ds <= 1; // 下一个延迟槽提交时修改PC
-                                    change_pc_to <= i_meta;
+                            3'd1: begin //  Branch
+                                // 直接提交
+                                commit <= 1;
+                                commit_upd <= i_result_reg;
+                                commit_reg <= i_result_reg_id;
+                                commit_regheap <= i_result_regheap;
+                                // i_meta = Jump TO PC
+                                // change_pc_ds <= 1;
+                                
+                                feed_to_bp <= 1;            // 更新分支预测表
+                                feed_bp_res <= i_meta;
+                                
+                                if (i_meta == i_j) begin // 预测正确
+                                    // 啥也不干
                                 end
                                 else begin
-                                    feed_to_bp <= 0; // 不更新！！
-                                    commit <= 0;     // 不提交
-                                    excode <= 5'h04;      // AdEL
+                                    if (i_meta[1:0] == 2'b00) begin
+                                        change_pc_ds <= 1; // 下一个延迟槽提交时修改PC
+                                        change_pc_to <= i_meta;
+                                    end
+                                    else begin
+                                        feed_to_bp <= 0; // 不更新！！
+                                        commit <= 0;     // 不提交
+                                        excode <= 5'h04;      // AdEL
+                                        normal_exc <= 1;
+                                    end
+                                end
+                            end
+                            3'd2: begin // MEM  （需要写回内存）
+                                // 不提交，进入内存处理阶段
+                                commit <= 0;
+                                status <= STATUS_MEM0;
+                                
+                                mem_vaddr <= sl_addr;
+                                case(i_uop)
+                                    6'd0: begin // SB
+                                        mem_ce <= 1;
+                                        mem_write <= 1; 
+                                        mem_bytemode <= {1'b0, sl_addr[1] & sl_addr[0], sl_addr[1] & ~sl_addr[0], ~sl_addr[1] & sl_addr[0], ~sl_addr[1] & ~sl_addr[0]};
+                                        mem_write_data <= rj_val;
+                                    end
+                                    6'd1: begin // SH
+                                        if (sl_addr[0] == 1'b0) begin
+                                            mem_ce <= 1;
+                                            mem_write <= 1; 
+                                            mem_bytemode <= {1'b0, sl_addr[1], sl_addr[1], ~sl_addr[1], ~sl_addr[1]};
+                                            mem_write_data <= rj_val;
+                                        end
+                                        else begin
+                                            excode <= 5'h05; // AdES
+                                        end
+                                    end
+                                    6'd2: begin // SW
+                                        if (sl_addr[1:0] == 2'b00) begin
+                                            mem_ce <= 1;
+                                            mem_write <= 1; 
+                                            mem_bytemode <= 5'b01111;
+                                            mem_write_data <= rj_val;
+                                        end
+                                        else begin
+                                            excode <= 5'h05; // AdES
+                                        end
+                                    end
+                                    6'd3: begin // LBU
+                                        mem_ce <= 1;
+                                        mem_write <= 0; 
+                                        mem_bytemode <= {1'b1, sl_addr[1] & sl_addr[0], sl_addr[1] & ~sl_addr[0], ~sl_addr[1] & sl_addr[0], ~sl_addr[1] & ~sl_addr[0]};
+                                    end
+                                    6'd4: begin // LB
+                                        mem_ce <= 1;
+                                        mem_write <= 0; 
+                                        mem_bytemode <= {1'b0, sl_addr[1] & sl_addr[0], sl_addr[1] & ~sl_addr[0], ~sl_addr[1] & sl_addr[0], ~sl_addr[1] & ~sl_addr[0]};
+                                    end
+                                    6'd5: begin // LHU
+                                        if (sl_addr[0] == 1'b0) begin
+                                            mem_ce <= 1;
+                                            mem_write <= 0; 
+                                            mem_bytemode <= {1'b1, sl_addr[1], sl_addr[1], ~sl_addr[1], ~sl_addr[1]};
+                                        end
+                                        else begin
+                                            excode <= 5'h04; // AdEL
+                                        end
+                                    end
+                                    6'd6: begin // LH
+                                        if (sl_addr[0] == 1'b0) begin
+                                            mem_ce <= 1;
+                                            mem_write <= 0; 
+                                            mem_bytemode <= {1'b0, sl_addr[1], sl_addr[1], ~sl_addr[1], ~sl_addr[1]};
+                                        end
+                                        else begin
+                                            excode <= 5'h04; // AdEL
+                                        end
+                                    end
+                                    6'd7: begin // LW
+                                        if (sl_addr[1:0] == 2'b00) begin
+                                            mem_ce <= 1;
+                                            mem_write <= 0;
+                                            mem_bytemode <= 5'b01111;
+                                        end
+                                        else begin
+                                            excode <= 5'h04; // AdEL
+                                        end
+                                    end
+                                    default: ;
+                                endcase
+                            end
+                            3'd3: begin // MFHI/LO
+                                commit <= 1;
+                                commit_upd <= i_result_reg;
+                                commit_reg <= i_result_reg_id;
+                                commit_regheap <= i_result_regheap;
+                                
+                                force_upd <= 1;
+                                force_upd_val <= i_meta[0] ? reg_lo : reg_hi;
+                            end
+                            3'd4: begin // MTHI/LO
+                                commit <= 1;
+                                commit_upd <= 0;
+                                upd_hi <= ~i_meta[0];
+                                upd_lo <= i_meta[0];
+                                upd_hi_val <= i_meta[0] ? 32'b0 : ri_val;
+                                upd_lo_val <= i_meta[0] ? ri_val : 32'b0;
+                            end
+                            3'd5: begin // MULDIV
+                                commit <= 1;
+                                commit_upd <= 0;
+                                muldiv_clear <= 1;  // 释放乘除法器
+                                upd_hi <= 1;
+                                upd_lo <= 1;
+                                upd_hi_val <= muldiv_res[63:32];
+                                upd_lo_val <= muldiv_res[31:0];
+                            end
+                            3'd6: begin // CP0
+                                // TLBR, TLBP, TLBWR, TLBWI, MTC0, MFC0
+                                if (is_kernel) begin
+                                    cp0_ce <= 1;
+                                    if (i_uop == 13 || i_uop == 14) begin   // MTC0, MFC0
+                                        commit <= 0;
+                                        status <= STATUS_CP0_0;
+                                        cp0_inst <= (i_uop == 13) ? 0 : 1;
+                                        cp0_param <= i_meta[4:0];
+                                        cp0_putval <= ri_val;
+                                    end
+                                    else begin
+                                        commit <= 1;
+                                        commit_upd <= 0;
+                                        cp0_inst <= i_uop - 6'd6; // 2~5    TLBR, TLBP, TLBWR, TLBWI
+                                    end
+                                end
+                                else begin  // 非内核态使用CP0将触发保护异常
+                                    commit <= 0;
+                                    excode <= 5'h0a;      // RI
                                     normal_exc <= 1;
                                 end
                             end
-                        end
-                        3'd2: begin // MEM  （需要写回内存）
-                            // 不提交，进入内存处理阶段
-                            commit <= 0;
-                            status <= STATUS_MEM0;
-                            
-                            mem_vaddr <= sl_addr;
-                            case(i_uop)
-                                6'd0: begin // SB
-                                    mem_ce <= 1;
-                                    mem_write <= 1; 
-                                    mem_bytemode <= {1'b0, sl_addr[1] & sl_addr[0], sl_addr[1] & ~sl_addr[0], ~sl_addr[1] & sl_addr[0], ~sl_addr[1] & ~sl_addr[0]};
-                                    mem_write_data <= rj_val;
-                                end
-                                6'd1: begin // SH
-                                    if (sl_addr[0] == 1'b0) begin
-                                        mem_ce <= 1;
-                                        mem_write <= 1; 
-                                        mem_bytemode <= {1'b0, sl_addr[1], sl_addr[1], ~sl_addr[1], ~sl_addr[1]};
-                                        mem_write_data <= rj_val;
-                                    end
-                                    else begin
-                                        excode <= 5'h05; // AdES
-                                    end
-                                end
-                                6'd2: begin // SW
-                                    if (sl_addr[1:0] == 2'b00) begin
-                                        mem_ce <= 1;
-                                        mem_write <= 1; 
-                                        mem_bytemode <= 5'b01111;
-                                        mem_write_data <= rj_val;
-                                    end
-                                    else begin
-                                        excode <= 5'h05; // AdES
-                                    end
-                                end
-                                6'd3: begin // LBU
-                                    mem_ce <= 1;
-                                    mem_write <= 0; 
-                                    mem_bytemode <= {1'b1, sl_addr[1] & sl_addr[0], sl_addr[1] & ~sl_addr[0], ~sl_addr[1] & sl_addr[0], ~sl_addr[1] & ~sl_addr[0]};
-                                end
-                                6'd4: begin // LB
-                                    mem_ce <= 1;
-                                    mem_write <= 0; 
-                                    mem_bytemode <= {1'b0, sl_addr[1] & sl_addr[0], sl_addr[1] & ~sl_addr[0], ~sl_addr[1] & sl_addr[0], ~sl_addr[1] & ~sl_addr[0]};
-                                end
-                                6'd5: begin // LHU
-                                    if (sl_addr[0] == 1'b0) begin
-                                        mem_ce <= 1;
-                                        mem_write <= 0; 
-                                        mem_bytemode <= {1'b1, sl_addr[1], sl_addr[1], ~sl_addr[1], ~sl_addr[1]};
-                                    end
-                                    else begin
-                                        excode <= 5'h04; // AdEL
-                                    end
-                                end
-                                6'd6: begin // LH
-                                    if (sl_addr[0] == 1'b0) begin
-                                        mem_ce <= 1;
-                                        mem_write <= 0; 
-                                        mem_bytemode <= {1'b0, sl_addr[1], sl_addr[1], ~sl_addr[1], ~sl_addr[1]};
-                                    end
-                                    else begin
-                                        excode <= 5'h04; // AdEL
-                                    end
-                                end
-                                6'd7: begin // LW
-                                    if (sl_addr[1:0] == 2'b00) begin
-                                        mem_ce <= 1;
-                                        mem_write <= 0;
-                                        mem_bytemode <= 5'b01111;
-                                    end
-                                    else begin
-                                        excode <= 5'h04; // AdEL
-                                    end
-                                end
-                                default: ;
-                            endcase
-                        end
-                        3'd3: begin // MFHI/LO
-                            commit <= 1;
-                            commit_upd <= i_result_reg;
-                            commit_reg <= i_result_reg_id;
-                            commit_regheap <= i_result_regheap;
-                            
-                            force_upd <= 1;
-                            force_upd_val <= i_meta[0] ? reg_lo : reg_hi;
-                        end
-                        3'd4: begin // MTHI/LO
-                            commit <= 1;
-                            commit_upd <= 0;
-                            upd_hi <= ~i_meta[0];
-                            upd_lo <= i_meta[0];
-                            upd_hi_val <= i_meta[0] ? 32'b0 : ri_val;
-                            upd_lo_val <= i_meta[0] ? ri_val : 32'b0;
-                        end
-                        3'd5: begin // MULDIV
-                            commit <= 1;
-                            commit_upd <= 0;
-                            muldiv_clear <= 1;  // 释放乘除法器
-                            upd_hi <= 1;
-                            upd_lo <= 1;
-                            upd_hi_val <= muldiv_res[63:32];
-                            upd_lo_val <= muldiv_res[31:0];
-                        end
-                        3'd6: begin // CP0
-                            // TLBR, TLBP, TLBWR, TLBWI, MTC0, MFC0
-                            if (is_kernel) begin
-                                cp0_ce <= 1;
-                                if (i_uop == 13 || i_uop == 14) begin   // MTC0, MFC0
-                                    commit <= 0;
-                                    status <= STATUS_CP0_0;
-                                    cp0_inst <= (i_uop == 13) ? 0 : 1;
-                                    cp0_param <= i_meta[4:0];
-                                    cp0_putval <= ri_val;
-                                end
-                                else begin
-                                    commit <= 1;
-                                    commit_upd <= 0;
-                                    cp0_inst <= i_uop - 6'd6; // 2~5    TLBR, TLBP, TLBWR, TLBWI
-                                end
-                            end
-                            else begin  // 非内核态使用CP0将触发保护异常
+                            3'd7: begin // ERET
                                 commit <= 0;
-                                excode <= 5'h0a;      // RI
-                                normal_exc <= 1;
+                                status <= STATUS_ERET_0;
+                                cp0_inst <= 1;  // MFC0
+                                cp0_param <= 5'd14; // EPC
                             end
+                        endcase
+                    end
+                end
+                else if (i_status == STATUS_MEM0) begin // 在其他过程中均不处理中断
+                    if (i_excode) begin // 地址异常
+                        // 会触发clear导致
+                        normal_exc <= 1;
+                    end
+                    else if (mem_tlbmiss) begin
+                        tlb_exc <= 1;
+                        if (i_uop == 6'd0 || i_uop == 6'd1 || i_uop == 6'd2 ) begin
+                            excode <= 5'h03;
                         end
-                    endcase
-                end
-            end
-            else if (i_status == STATUS_MEM0) begin // 在其他过程中均不处理中断
-                if (i_excode) begin // 地址异常
-                    // 会触发clear导致
-                    normal_exc <= 1;
-                end
-                else if (mem_tlbmiss) begin
-                    tlb_exc <= 1;
-                    if (i_uop == 6'd0 || i_uop == 6'd1 || i_uop == 6'd2 ) begin
-                        excode <= 5'h03;
+                        else begin
+                            excode <= 5'h02;
+                        end
+                    end
+                    else if (mem_modify_ex) begin
+                        normal_exc <= 1;
+                        excode <= 5'h01;
                     end
                     else begin
-                        excode <= 5'h02;
+                        status <= STATUS_MEM1;
                     end
                 end
-                else if (mem_modify_ex) begin
-                    normal_exc <= 1;
-                    excode <= 5'h01;
+                else if (i_status == STATUS_MEM1) begin
+                    if (mem_avail) begin
+                        commit <= 1;
+                        commit_upd <= i_result_reg;
+                        commit_reg <= i_result_reg_id;
+                        commit_regheap <= i_result_regheap;
+                        if (i_uop == 6'd0 || i_uop == 6'd1 || i_uop == 6'd2 ) begin
+                            // Store
+                        end
+                        else begin
+                            // Load
+                            force_upd <= 1;
+                            force_upd_val <= mem_read_data;
+                        end
+                        
+                    end
                 end
-                else begin
-                    status <= STATUS_MEM1;
+                else if (i_status == STATUS_CP0_0) begin
+                    status <= STATUS_CP0_1;
                 end
-            end
-            else if (i_status == STATUS_MEM1) begin
-                if (mem_avail) begin
+                else if (i_status == STATUS_CP0_1) begin
                     commit <= 1;
                     commit_upd <= i_result_reg;
                     commit_reg <= i_result_reg_id;
                     commit_regheap <= i_result_regheap;
-                    if (i_uop == 6'd0 || i_uop == 6'd1 || i_uop == 6'd2 ) begin
-                        // Store
+                    if (i_result_reg) begin
+                        force_upd <= 1;
+                        force_upd_val <= cp0_result;
+                    end
+                end
+                else if (i_status == STATUS_ERET_0) begin
+                    status <= STATUS_ERET_1;
+                end
+                else if (i_status == STATUS_ERET_1) begin
+                    if (cp0_result[1:0] == 2'b00) begin
+                        commit <= 1;
+                        commit_upd <= 0;
+                        change_pc_imm <= 1; // 立即修改PC
+                        change_pc_to <= i_meta;
+                        cp0_inst <= 3'd6;   // ERET
                     end
                     else begin
-                        // Load
-                        force_upd <= 1;
-                        force_upd_val <= mem_read_data;
+                        commit <= 0;     // 不提交
+                        excode <= 5'h04;      // AdEL
+                        normal_exc <= 1;
                     end
-                    
                 end
             end
-            else if (i_status == STATUS_CP0_0) begin
-                status <= STATUS_CP0_1;
-            end
-            else if (i_status == STATUS_CP0_1) begin
-                commit <= 1;
-                commit_upd <= i_result_reg;
-                commit_reg <= i_result_reg_id;
-                commit_regheap <= i_result_regheap;
-                if (i_result_reg) begin
-                    force_upd <= 1;
-                    force_upd_val <= cp0_result;
-                end
-            end
-            
+        
         end
     end
 end
