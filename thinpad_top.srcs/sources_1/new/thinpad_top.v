@@ -94,7 +94,17 @@ assign video_de = 0;
 
 wire    clear;
 wire    clk_100M;
-wire    lock;
+wire    locked;
+
+clk_wiz_0 pll_example
+(
+    // Clock out ports
+    .clk_out1(clk_100M),     // output clk_out1
+    // Status and control signals
+    .locked(locked),       // output locked
+    // Clock in ports
+    .clk_in1(clk_50M)
+);      // input clk_in1
 
 reg     rst = 1;
 
@@ -102,7 +112,7 @@ reg     rst = 1;
 
 /* ================ rst =================== */
 always @(posedge clk_50M) begin
-    if (reset_btn || lock) begin
+    if (reset_btn || !locked) begin
         rst <= 1;
     end
     else begin
