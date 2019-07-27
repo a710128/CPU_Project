@@ -139,15 +139,13 @@ always @(posedge clk) begin
                             alu_result <= ri_val + alu_meta;
                         end
                         6'd7: begin // ADDI
-                            alu_result <= ext_addi[31:0];
-                            /*
                             if (ext_addi[32] == ext_addi[31]) begin
                                 alu_result <= ext_addi[31:0];
                             end
                             else begin
                                 alu_exc <= 1;
                                 alu_excode <= 5'h0c;    // Overflow
-                            end*/
+                            end
                         end
                         6'd8: begin // MOVZ
                             alu_exc <= 1;

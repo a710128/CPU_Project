@@ -93,11 +93,16 @@ assign video_de = 0;
 
 
 wire    clear;
+wire    clk_100M;
+wire    lock;
 
 reg     rst = 1;
 
+
+
+/* ================ rst =================== */
 always @(posedge clk_50M) begin
-    if (reset_btn) begin
+    if (reset_btn || lock) begin
         rst <= 1;
     end
     else begin
@@ -105,6 +110,16 @@ always @(posedge clk_50M) begin
     end
 end
 
+/* ================= on-chip ROM ================*/
+wire        rom_ce;
+wire[9:0]   rom_addr;
+wire[31:0]  rom_data;
+blk_mem_gen_0 rom0 (
+  .clka(clk_100M),
+  .ena(rom_ce),
+  .addra(rom_addr),
+  .douta(rom_data)
+);
 
 /* ================ UART ================= */
 wire    uart_data_read, uart_data_write;
@@ -287,7 +302,12 @@ mem mem_inst (
     
     // 
     .leds(leds),         //16位LED，输出时1点亮
-    .dpy_number(dpy_number)    //数码管显示数值
+    .dpy_number(dpy_number),    //数码管显示数值
+    
+    // on-chip ROM
+    .rom_ce(rom_ce),
+    .rom_addr(rom_addr),
+    .rom_data(rom_data)
 );
 
 

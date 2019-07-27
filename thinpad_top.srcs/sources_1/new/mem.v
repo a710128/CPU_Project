@@ -98,7 +98,13 @@ module mem(
     
     // 
     output wire[15:0] leds,         //16位LED，输出时1点亮
-    output wire[7:0]  dpy_number    //数码管显示数值
+    output wire[7:0]  dpy_number,   //数码管显示数值
+    
+    // on-chip ROM
+    output wire  rom_ce,
+    output wire[9:0] rom_addr,
+    input wire[31:0] rom_data
+    
 );
 
 /* ===================== unused  ==================== */
@@ -137,6 +143,8 @@ reg         i_flash_ce_n, i_flash_oe_n, i_flash_we_n;
 reg[15:0]   i_leds;
 reg[7:0]    i_dpy_number;
 
+reg         i_rom_ce;
+reg[9:0]    i_rom_addr;
 
 /* ====================== output ===================== */
 
@@ -159,14 +167,18 @@ reg         o_flash_ce_n, o_flash_oe_n, o_flash_we_n;
 reg[15:0]   o_leds;
 reg[7:0]    o_dpy_number;
 
+reg         o_rom_ce;
+reg[9:0]    o_rom_addr;
+
 /*  ======================== output selector =======================  */
-wire[31:0]  data_in[5:0];
+wire[31:0]  data_in[6:0];
 assign  data_in[0] = 0;
 assign  data_in[1] = base_ram_data;
 assign  data_in[2] = ext_ram_data;
 assign  data_in[3] = {24'b0, uart_data_in};
 assign  data_in[4] = {16'b0, flash_d};
 assign  data_in[5] = {30'b0, uart_data_ready, uart_busy};
+assign  data_in[6] = rom_data;
 
 wire[31:0]  output_data_n;
 reg[31:0]   output_data;
@@ -238,6 +250,9 @@ assign flash_byte_n = 1;
 assign leds = o_leds;
 assign dpy_number = o_dpy_number;
 
+assign rom_ce = o_rom_ce;
+assign rom_addr = o_rom_addr;
+
 assign  if_data = o_mem_req ? 32'b0 : output_data_n;
 assign  mem_data = o_mem_req ? output_data : 32'b0;
 assign  if_skip = o_mem_req;
@@ -269,6 +284,9 @@ always @(*) begin
     i_flash_d <= 0;
     i_flash_oe_n <= 1;
     i_flash_we_n <= 1;
+    
+    i_rom_ce <= 0;
+    i_rom_addr <= 0; 
     
     
     if (mem_ce) begin
@@ -338,7 +356,10 @@ always @(*) begin
             i_output_sel <= 4;
         end
         else if (mem_addr[31:12] == 20'h1FC00) begin // on-chip ROM
-            
+            i_cnt_req <= 0;
+            i_rom_ce <= 1;
+            i_rom_addr <= mem_addr[11:2];
+            i_output_sel <= 6;
         end
     end
     else begin
@@ -370,7 +391,11 @@ always @(*) begin
                     i_output_sel <= 1;
                 end
             end
-            else if (mem_addr[31:12] == 20'h1FC00) begin // on-chip ROM
+            else if (if_addr[31:12] == 20'h1FC00) begin // on-chip ROM
+                i_cnt_req <= 0;
+                i_rom_ce <= 1;
+                i_rom_addr <= if_addr[11:2];
+                i_output_sel <= 6;
             end
         end
     end
@@ -403,6 +428,8 @@ always @(posedge clk_50M) begin
         o_flash_we_n <= 1;
         o_leds <= 0;
         o_dpy_number <= 0;
+        o_rom_ce <= 0;
+        o_rom_addr <= 0;
     end
     else if (o_cnt_req) begin
         o_cnt_req <= o_cnt_req - 1;
@@ -432,6 +459,8 @@ always @(posedge clk_50M) begin
         o_flash_we_n <= i_flash_we_n;
         o_leds <= i_leds;
         o_dpy_number <= i_dpy_number;
+        o_rom_ce <= i_rom_ce;
+        o_rom_addr <= i_rom_addr;
     end
 end
 

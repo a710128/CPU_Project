@@ -158,6 +158,7 @@ always @(posedge clk) begin
         cp0_regs[29] <= 0;
         cp0_regs[30] <= 0;
         cp0_regs[31] <= 0;
+        random_reg <= 0;
     end
     else begin
         

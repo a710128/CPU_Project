@@ -43,8 +43,8 @@ parameter STATUS_INIT_0 = 0;
 parameter STATUS_CLEAR = 1;
 parameter STATUS_NORMAL = 2;
 parameter STATUS_INIT_1 = 3;
-// parameter INIT_PC = 32'hBFC00000;
-parameter INIT_PC = 32'h80000000;
+parameter INIT_PC = 32'hBFC00000;
+//parameter INIT_PC = 32'h80000000;
 
 reg[3:0]    status = STATUS_INIT_0;
 reg[255:0]  valid;

@@ -338,9 +338,14 @@ always @(posedge clk) begin
         reg_active[29] <= reg_commit[29];
         reg_active[30] <= reg_commit[30];
         reg_active[31] <= reg_commit[31];
+        
+        if (commit) begin // commit 同时 clear
+            reg_commit[commit_reg] <= commit_regheap;
+            reg_active[commit_reg] <= commit_regheap;
+        end
     end
     else begin
-        if (commit) begin // 当 clear 时一定不会 commit
+        if (commit) begin
             reg_commit[commit_reg] <= commit_regheap;
         end
         
@@ -348,6 +353,8 @@ always @(posedge clk) begin
             reg_active[issue_reg] <=  assign_reg_id;
         end
     end
+    
+    
 end
 
 

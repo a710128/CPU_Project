@@ -302,6 +302,7 @@ always @(posedge clk) begin
                                         commit <= 0;     // 不提交
                                         excode <= 5'h04;      // AdEL
                                         normal_exc <= 1;
+                                        mem_vaddr <= i_meta;
                                     end
                                 end
                             end
@@ -416,7 +417,7 @@ always @(posedge clk) begin
                                     if (i_uop == 13 || i_uop == 14) begin   // MTC0, MFC0
                                         commit <= 0;
                                         status <= STATUS_CP0_0;
-                                        cp0_inst <= (i_uop == 13) ? 0 : 1;
+                                        cp0_inst <= (i_uop == 14) ? 0 : 1;
                                         cp0_param <= i_meta[4:0];
                                         cp0_putval <= ri_val;
                                     end
@@ -435,6 +436,7 @@ always @(posedge clk) begin
                             3'd7: begin // ERET
                                 commit <= 0;
                                 status <= STATUS_ERET_0;
+                                cp0_ce <= 1;
                                 cp0_inst <= 1;  // MFC0
                                 cp0_param <= 5'd14; // EPC
                             end
@@ -498,17 +500,20 @@ always @(posedge clk) begin
                     status <= STATUS_ERET_1;
                 end
                 else if (i_status == STATUS_ERET_1) begin
+                    cp0_ce <= 1;
                     if (cp0_result[1:0] == 2'b00) begin
                         commit <= 1;
                         commit_upd <= 0;
                         change_pc_imm <= 1; // 立即修改PC
-                        change_pc_to <= i_meta;
+                        change_pc_to <= cp0_result;
                         cp0_inst <= 3'd6;   // ERET
                     end
                     else begin
+                        cp0_ce <= 0;
                         commit <= 0;     // 不提交
                         excode <= 5'h04;      // AdEL
                         normal_exc <= 1;
+                        mem_vaddr <= cp0_result;
                     end
                 end
             end
