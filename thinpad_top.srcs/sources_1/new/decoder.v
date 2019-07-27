@@ -352,27 +352,28 @@ end
 
 
 always @(*) begin
+    cant_issue <= 0;
+    issue <= 0;
+    issue_buffer_id <= 0;
+    issue_reg <= 0;  
+    assign_reg <= 0;
+    assign_reg_id <= 0;
+    assign_component <= 0;
+    assign_component_id <= 0;
+    issue_ri <= 0;
+    issue_ri_id <= 0;
+    issue_rj <= 0;
+    issue_rj_id <= 0;
+    issue_commit_op <= 0;
+    issue_excode <= 0;
+    issue_uop <= 0;
+    issue_meta <= 0;
+    issue_pc <= 0;
+    issue_j <= 0;
+    issue_delay_slot <= 0;
+    
     if (rst || clear) begin
         // 如果 rst 或者 clear 则不进行操作
-        cant_issue <= 0;
-        issue <= 0;
-        issue_buffer_id <= 0;
-        issue_reg <= 0;
-        assign_reg <= 0;
-        assign_reg_id <= 0;
-        assign_component <= 0;
-        assign_component_id <= 0;
-        issue_ri <= 0;
-        issue_ri_id <= 0;
-        issue_rj <= 0;
-        issue_rj_id <= 0;
-        issue_commit_op <= 0;
-        issue_excode <= 0;
-        issue_uop <= 0;
-        issue_meta <= 0;
-        issue_pc <= 0;
-        issue_j <= 0;
-        issue_delay_slot <= 0;
     end
     else if (noinst) begin       // 没有指令
         cant_issue <= 0;    // 可以发射
@@ -683,6 +684,7 @@ always @(*) begin
                         issue_excode <= 0;
                         issue_meta <= 0;
                     end
+                    default: ;
                 endcase
             end
             else begin  // Reserved (illegal) Instruction

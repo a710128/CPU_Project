@@ -55,6 +55,7 @@
 COMPONENT div_unsigned
   PORT (
     aclk : IN STD_LOGIC;
+    aresetn : IN STD_LOGIC;
     s_axis_divisor_tvalid : IN STD_LOGIC;
     s_axis_divisor_tdata : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
     s_axis_dividend_tvalid : IN STD_LOGIC;
@@ -72,6 +73,7 @@ END COMPONENT;
 your_instance_name : div_unsigned
   PORT MAP (
     aclk => aclk,
+    aresetn => aresetn,
     s_axis_divisor_tvalid => s_axis_divisor_tvalid,
     s_axis_divisor_tdata => s_axis_divisor_tdata,
     s_axis_dividend_tvalid => s_axis_dividend_tvalid,

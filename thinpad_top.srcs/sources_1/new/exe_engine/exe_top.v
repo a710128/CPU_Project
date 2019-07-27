@@ -313,6 +313,8 @@ generate
             .issue_inp(issue_vec),
             .rob_inp( inp ),  
             
+            .i_comp_avail( inp[12] ? component_status_avail[ inp[15:13] ] : 1'b1 ),
+            
             .i_comp_cmeta( inp[12] ? component_change_meta[ inp[15:13] ] : 1'b0),
             .i_nw_meta( inp[12] ? component_nw_meta[ inp[15:13] ] : 32'b0 ),
             
@@ -339,7 +341,7 @@ wire        commit_buffer_normal_exception;
 
 wire        commit_pc_imm;
 wire        commit_pc_ds;
-wire        commit_pc_addr;
+wire[31:0]  commit_pc_addr;
 wire        commit_feed_bp;
 wire[31:0]  commit_bp_res;
 
@@ -378,7 +380,7 @@ rob_commit rob_commit_inst(
     .i_status( buffer_commit ? 4'd0 : commit_buffer_status ),               // 状态
     .o_status( commit_buffer_status ),
     
-    .intq( hardint != 6'b000000 ),                   // 是否有外部中断
+    .intq( (hardint != 6'b000000) && cp0_SR[0] ),                   // 是否有外部中断
     .tlb_exc( commit_buffer_tlb_exception ),
     .normal_exc( commit_buffer_normal_exception ),
     .cp0_SR ( cp0_SR ),
@@ -402,8 +404,8 @@ rob_commit rob_commit_inst(
     .mem_modify_ex( mem_modify_ex ),
     
     // HI LO
-    .reg_hi(reg_HI),
-    .reg_lo(reg_LO),
+    .reg_hi(upd_hi ? upd_hi_val : reg_HI),
+    .reg_lo(upd_lo ? upd_lo_val :reg_LO),
     .upd_hi(upd_hi),
     .upd_lo(upd_lo),
     .upd_hi_val(upd_hi_val),
@@ -434,6 +436,7 @@ assign cp0_exc_ds = rob_inps[0][140];
 assign feed_bp = commit_feed_bp;
 assign feed_bp_dst = commit_bp_res;
 assign feed_bp_pc = rob_inps[0][107:76];
+
 
 
 always @(*) begin
@@ -468,7 +471,10 @@ always @(*) begin
 end
 
 always @(posedge clk) begin
-    if (commit_buffer_tlb_exception) begin
+    if (rst) begin
+        ds_pc <= 0;
+    end
+    else if (commit_buffer_tlb_exception) begin
         ds_pc <= 0;
     end
     else if (commit_buffer_normal_exception) begin

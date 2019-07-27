@@ -26,7 +26,6 @@ module rob_entry(
     input wire  clear,
     
     input wire          issue,
-    
     input wire[140:0]   issue_inp,     
     input wire[141:0]   rob_inp,
     
@@ -76,7 +75,7 @@ assign i_uop = inp[43:38];
 assign i_meta = inp[75:44];
 assign i_pc = inp[107:76];
 assign i_j = inp[139:108];
-assign i_ds = rob_inp[140];
+assign i_ds = inp[140];
 assign i_used = inp[141];
 
 

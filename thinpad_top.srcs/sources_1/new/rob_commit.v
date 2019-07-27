@@ -141,7 +141,7 @@ assign i_uop = inp[43:38];
 assign i_meta = inp[75:44];
 assign i_pc = inp[107:76];
 assign i_j = inp[139:108];
-assign i_ds = rob_inp[140];
+assign i_ds = inp[140];
 assign i_used = inp[141];
 
 
@@ -165,6 +165,7 @@ assign o_status = status;
 
 wire[31:0]  sl_addr = $signed(ri_val) + i_meta;
 wire        is_kernel = (cp0_SR[1] || (cp0_SR[4:3] == 2'b00));
+//wire        commit_wb = (i_component == 0) && (!result_avail);  // 无关联计算元件且变量未完成
 
 
 always @(posedge clk) begin
@@ -172,6 +173,7 @@ always @(posedge clk) begin
     status <= STATUS_WAIT;
     tlb_exc <= 0;
     normal_exc <= 0;
+    change_pc_imm <= 0;
     change_pc_ds <= 0;
     feed_to_bp <= 0;
     mem_ce <= 0;
@@ -234,7 +236,8 @@ always @(posedge clk) begin
         
             if (!i_used) begin
             end
-            else if (!result_avail) begin    // 还未计算出结果
+            //else if ((!result_avail) && (!commit_wb)) begin    // 还未计算出结果
+            else if (i_component) begin    // 还未计算出结果
                 if (intq) begin // 外部中断，在等待结果时候遇到外部中断则直接处理
                     normal_exc <= 1;
                     excode <= 0;
@@ -252,7 +255,7 @@ always @(posedge clk) begin
                         normal_exc <= 1;
                         excode <= 0;
                     end
-                    if (i_excode) begin // 有异常
+                    else if (i_excode) begin // 有异常
                         // （将会触发clear所以不设置status）
                         if (i_excode == 2) begin
                             tlb_exc <= 1; // TLB 异常 
@@ -445,6 +448,7 @@ always @(posedge clk) begin
                     end
                     else if (mem_tlbmiss) begin
                         tlb_exc <= 1;
+                        mem_vaddr <= sl_addr;
                         if (i_uop == 6'd0 || i_uop == 6'd1 || i_uop == 6'd2 ) begin
                             excode <= 5'h03;
                         end

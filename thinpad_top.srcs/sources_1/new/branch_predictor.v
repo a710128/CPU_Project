@@ -46,7 +46,7 @@ parameter STATUS_INIT_1 = 3;
 // parameter INIT_PC = 32'hBFC00000;
 parameter INIT_PC = 32'h80000000;
 
-reg[3:0]    status;
+reg[3:0]    status = STATUS_INIT_0;
 reg[255:0]  valid;
 reg[61:0]   bp_line[255:0];
 
@@ -121,7 +121,10 @@ always @(*) begin
         pc_pred <= pc + 32'd4;
     end
     else begin
-        if (is_j || is_jal) begin
+        if (noinst) begin
+            pc_pred <= pc + 32'd4;
+        end
+        else if (is_j || is_jal) begin
             delay_slot <= 1;
             pc_pred <= { pc[31:28], inst[25:0], 2'b0 };
         end

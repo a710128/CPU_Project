@@ -1,10 +1,10 @@
 // Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
-// Date        : Fri Jul 26 02:57:29 2019
+// Date        : Fri Jul 26 22:57:44 2019
 // Host        : DESKTOP-R77VRGM running 64-bit major release  (build 9200)
 // Command     : write_verilog -force -mode synth_stub
-//               c:/Users/a710128/Desktop/cpu/nw/thinpad_top.srcs/sources_1/ip/mult_unsigned/mult_unsigned_stub.v
+//               C:/Users/a710128/Desktop/cpu/nw/thinpad_top.srcs/sources_1/ip/mult_unsigned/mult_unsigned_stub.v
 // Design      : mult_unsigned
 // Purpose     : Stub declaration of top-level module interface
 // Device      : xc7a100tfgg676-2L

@@ -70,7 +70,7 @@ always @(posedge clk) begin
     if (rst) begin
         val <= 0;
         commit_wb <= 0;
-        last_commit <= 0;
+        last_commit <= 1;
         if (reg_id < 32) begin
             assign_reg <= reg_id;
             used <= 1;
@@ -123,6 +123,10 @@ always @(posedge clk) begin
                     if (force_update) begin
                         available <= 1;
                         val <= force_value;
+                        
+                        if (commit && (commit_regid == assign_reg) && (commit_regheap == reg_id)) begin // 更新的同时提交
+                            last_commit <= 1;
+                        end
                     end
                 end
                 else if (reg_component_available) begin // 运算器已经完成

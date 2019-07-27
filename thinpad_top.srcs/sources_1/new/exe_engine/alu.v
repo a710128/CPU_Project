@@ -80,7 +80,8 @@ assign result = alu_result;
 
 assign change_meta = 0;
 assign set_nw_meta = 0;
-
+assign exc = alu_exc;
+assign excode = alu_excode;
 
 // others
 
@@ -138,13 +139,15 @@ always @(posedge clk) begin
                             alu_result <= ri_val + alu_meta;
                         end
                         6'd7: begin // ADDI
-                            if (ext_addi[32] != ext_addi[31]) begin
-                                alu_exc <= 1;
-                                alu_excode <= 5'h0c;    // Overflow
-                            end
-                            else begin
+                            alu_result <= ext_addi[31:0];
+                            /*
+                            if (ext_addi[32] == ext_addi[31]) begin
                                 alu_result <= ext_addi[31:0];
                             end
+                            else begin
+                                alu_exc <= 1;
+                                alu_excode <= 5'h0c;    // Overflow
+                            end*/
                         end
                         6'd8: begin // MOVZ
                             alu_exc <= 1;
@@ -217,6 +220,7 @@ always @(posedge clk) begin
             3'd2: begin // Finished Çå¿Õ
                 status <= STATUS_EMPTY;
             end
+            default: ;
         endcase
     end
 end

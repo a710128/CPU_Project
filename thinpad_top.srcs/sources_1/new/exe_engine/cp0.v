@@ -75,7 +75,7 @@ parameter EPC = 14;         // EPC
 parameter EBASE = 15;         // ExceptionBase
 
 
-reg[31:0]   cp0_regs[31:0];
+(* KEEP = "TRUE" *) reg[31:0]   cp0_regs[31:0];
 wire[31:0]  cp0[31:0];
 reg         tlbp, tlbr, tlbwe;
 reg[31:0]   random_reg;
@@ -120,6 +120,8 @@ assign cp0[31] = cp0_regs[31];
 assign cp0_status = cp0[STATUS];
 assign cp0_ebase = cp0[EBASE];
 assign cp0_entryhi = cp0[ENTRYHI];
+assign cp0_counter = cp0[COUNT];
+assign cp0_compare = cp0[COMPARE];
 
 
 always @(posedge clk) begin
@@ -197,6 +199,7 @@ always @(posedge clk) begin
                 3'd6: begin // ERET
                     cp0_regs[STATUS][1] <= 1'b0;
                 end
+                default: ;
             endcase
         end
         

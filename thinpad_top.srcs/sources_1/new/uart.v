@@ -49,8 +49,10 @@ async_receiver #(.ClkFrequency(50000000),.Baud(9600)) //接收模块，9600无检验位
         .clk(clk_50M),                      //外部时钟信号
         .RxD(rxd),                          //外部串行信号输入
         .RxD_data_ready(ext_uart_ready),    //数据接收到标志
-        .RxD_clear(ex_uart_clear),         //清除接收标志
-        .RxD_data(ext_uart_rx)              //接收到的一字节数据
+        .RxD_clear(ex_uart_clear),          //清除接收标志
+        .RxD_data(ext_uart_rx),             //接收到的一字节数据
+        .RxD_idle(),
+        .RxD_endofpacket()
     );
 
 always @(*) begin

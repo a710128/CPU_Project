@@ -163,12 +163,14 @@ always @(posedge clk) begin
                     6'd10, 6'd11: begin // JALR, JR
                         brc_nw_meta <= ri_val;
                     end
+                    default: ;
                     endcase
                 end
             end
             2'd2: begin // Finished
                 status <= STATUS_EMPTY;
             end
+            default: ;
         endcase
     end
 end

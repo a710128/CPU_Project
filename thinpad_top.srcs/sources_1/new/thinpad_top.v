@@ -78,9 +78,23 @@ module thinpad_top(
     output wire video_vsync,       //场同步（垂直同步）信号
     output wire video_clk,         //像素时钟输出
     output wire video_de           //行数据有效信号，用于区分消隐区
+
 );
+assign uart_rdn = 1;
+assign uart_wrn = 1;
+assign video_red = 0;
+assign video_green = 0;
+assign video_blue = 0;
+assign video_hsync = 0;
+assign video_vsync = 0;
+assign video_clk = 0;
+assign video_de = 0;
+
+
+
 wire    clear;
-reg     rst;
+
+reg     rst = 1;
 
 always @(posedge clk_50M) begin
     if (reset_btn) begin
@@ -90,6 +104,7 @@ always @(posedge clk_50M) begin
         rst <= 0;
     end
 end
+
 
 /* ================ UART ================= */
 wire    uart_data_read, uart_data_write;
@@ -145,6 +160,7 @@ wire[95:0]  tlb_write_entry;
 assign mem_tlbmiss = (mem_exception == 2'd2 || mem_exception == 2'd3) ? 1'b1 : 1'b0;
 assign mem_modify_ex = (mem_exception == 2'd1) ? 1'b1 : 1'b0;
 assign mem_noexc = (mem_exception == 2'd0) ? 1'b1 : 1'b0;
+
 
 mmu mmu_inst(
     .clk(clk_50M),
@@ -291,7 +307,7 @@ assign i_if_id_noinst = if_skip | i_if_id_rst;
 always @(posedge clk_50M) begin
     i_if_id_tlbmiss <= next_PC_tlbmiss;
     i_if_id_pc <= next_PC_vaddr;
-    if (rst || clear) begin
+    if (rst) begin
         i_if_id_rst <= 1;
     end
     else begin
@@ -305,7 +321,6 @@ reg[31:0]   o_if_id_inst;       // To decode, branch_predictor
 reg         o_if_id_tlbmiss;    // To decode
 reg[31:0]   o_if_id_pc;         // To decode, branch_predictor
 reg         o_if_id_noinst;     // To decode, branch_predictor
-reg         o_if_id_ifskip;     // To mutex
 reg         o_if_id_delay_slot;
 wire[31:0]  bp_jump;            // From branch predictor
 wire        bp_delay_slot;      // From branch predictor
@@ -321,7 +336,6 @@ always @(posedge clk_50M) begin
         o_if_id_pc <= 0;
         o_if_id_inst <= 0;
         o_if_id_noinst <= 1;
-        o_if_id_ifskip <= 0;
         o_if_id_delay_slot <= 0;
     end
     else if (!cant_issue) begin
@@ -329,7 +343,6 @@ always @(posedge clk_50M) begin
         o_if_id_pc <= i_if_id_pc;
         o_if_id_inst <= if_data;
         o_if_id_noinst <= i_if_id_noinst;
-        o_if_id_ifskip <= if_skip;
         o_if_id_delay_slot <= i_if_id_delay_slot;
     end
 end
@@ -523,7 +536,8 @@ cp0 cp0_instance (
 /* ========== branch predicotr =========== */
 wire[31:0]      pred_pc;
 wire[31:0]      pc_mux0;
-assign issue_j = pred_pc;
+assign bp_jump = pred_pc;
+
 assign pc_mux0 = (if_skip || cant_issue) ? i_if_id_pc : pred_pc;
 assign next_PC_vaddr = pc_jump ? pc_jump_addr : pc_mux0;
 
@@ -545,5 +559,6 @@ branch_predictor branch_predictor_inst(
     .pc_pred(pred_pc),
     .delay_slot(i_if_id_delay_slot)
 );
+
 
 endmodule

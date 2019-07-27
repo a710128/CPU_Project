@@ -32,7 +32,7 @@ module mem(
     input wire[31:0]    if_addr,
     input wire[31:0]    mem_addr,
     input wire[31:0]    mem_data_write,
-    input wire[3:0]     mem_bytemode,
+    input wire[4:0]     mem_bytemode,
     
     output wire[31:0]   if_data,
     output wire[31:0]   mem_data,
@@ -101,6 +101,22 @@ module mem(
     output wire[7:0]  dpy_number    //数码管显示数值
 );
 
+/* ===================== unused  ==================== */
+assign sl811_a0 = 1;
+assign sl811_wr_n = 1;
+assign sl811_rd_n = 1;
+assign sl811_cs_n  = 1;
+assign sl811_rst_n = 1;
+assign sl811_dack_n = 1;
+
+assign dm9k_cmd = 1;
+assign dm9k_sd = 16'bz;
+assign dm9k_iow_n = 1;
+assign dm9k_ior_n = 1;
+assign dm9k_cs_n = 1;
+assign dm9k_pwrst_n = 1;
+
+
 /* ====================== input ===================== */
 reg         i_mem_req;
 reg[3:0]    i_cnt_req;
@@ -108,7 +124,7 @@ reg[2:0]    i_output_sel;
 
 reg[19:0]   i_base_ram_addr,    i_ext_ram_addr;
 reg[31:0]   i_base_ram_data,    i_ext_ram_data;
-reg[3:0]    i_bytemode;
+reg[4:0]    i_bytemode;
 reg         i_base_ram_ce_n, i_base_ram_oe_n, i_base_ram_we_n;
 reg         i_ext_ram_ce_n, i_ext_ram_oe_n, i_ext_ram_we_n;         
 reg         i_uart_data_read,   i_uart_data_write;
@@ -130,7 +146,7 @@ reg[2:0]    o_output_sel;
 
 reg[19:0]   o_base_ram_addr,    o_ext_ram_addr;
 reg[31:0]   o_base_ram_data,    o_ext_ram_data;
-reg[3:0]    o_bytemode;
+reg[4:0]    o_bytemode;
 reg         o_base_ram_ce_n, o_base_ram_oe_n, o_base_ram_we_n;
 reg         o_ext_ram_ce_n, o_ext_ram_oe_n, o_ext_ram_we_n;         
 reg         o_uart_data_read,   o_uart_data_write;
@@ -239,6 +255,22 @@ always @(*) begin
     i_output_sel <= 0;
     i_cnt_req <= 0;
     
+    i_base_ram_addr <= 0;
+    i_ext_ram_addr <= 0;
+    i_base_ram_data <= 0;
+    i_ext_ram_data <= 0;
+    i_bytemode <= 5'b01111;
+    i_base_ram_oe_n <= 1;
+    i_base_ram_we_n <= 1;
+    i_ext_ram_oe_n <= 1;
+    i_ext_ram_we_n <= 1;
+    i_uart_data_out <= 0;
+    i_flash_a <= 0;
+    i_flash_d <= 0;
+    i_flash_oe_n <= 1;
+    i_flash_we_n <= 1;
+    
+    
     if (mem_ce) begin
         i_mem_req <= 1;
         if (mem_addr[31:16] == 16'h1FD0) begin
@@ -267,6 +299,7 @@ always @(*) begin
                     i_cnt_req <= 0;
                     i_output_sel <= 5;
                 end
+                default: ;
             endcase
         end
         else if (mem_addr[31 : 16] < 16'h0080) begin    // RAM
@@ -341,6 +374,7 @@ always @(*) begin
             end
         end
     end
+    
 end
 
 always @(posedge clk_50M) begin
