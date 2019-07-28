@@ -27,6 +27,7 @@ module branch_predictor(
     
     input  wire[7:0]    current_entryHI,
     
+    input  wire         if_skip,
     input  wire         noinst,
     input  wire[31:0]   inst,
     input  wire[31:0]   pc,
@@ -35,8 +36,7 @@ module branch_predictor(
     input  wire[31:0]   feed_pc,
     input  wire[31:0]   feed_res,
     
-    output reg [31:0]   pc_pred,
-    output reg          delay_slot
+    output reg [31:0]   pc_pred
 );
 
 parameter STATUS_INIT_0 = 0;
@@ -110,7 +110,6 @@ wire        is_bgezal   =   (op == 6'b000001) && (inst[20:16] == 5'b10001);
 
 
 always @(*) begin
-    delay_slot <= 0;
     if (status == STATUS_INIT_0) begin
         pc_pred <= INIT_PC;
     end
@@ -121,7 +120,12 @@ always @(*) begin
         pc_pred <= pc + 32'd4;
     end
     else begin
-        if (noinst) begin
+        /*
+        if (if_skip) begin  // 如果当前IF被跳过，则保持预测不变
+            pc_pred <= pc_pred;
+        end
+        else
+        if (noinst) begin   // 不会执行到这个if里
             pc_pred <= pc + 32'd4;
         end
         else if (is_j || is_jal) begin
@@ -136,6 +140,14 @@ always @(*) begin
             else begin
                 pc_pred <= pc + 32'd4;
             end
+        end
+        else begin
+            pc_pred <= pc + 32'd4;
+        end
+        */
+        if (is_j || is_jal || is_jr || is_jalr || is_beq || is_bne || is_bgtz || is_blez || is_bltz || is_bltzal || is_bgez || is_bgezal) begin
+            // pc_pred <= {pc[30:0], 1'b0} ;
+            pc_pred <= pc + 32'd4;
         end
         else begin
             pc_pred <= pc + 32'd4;

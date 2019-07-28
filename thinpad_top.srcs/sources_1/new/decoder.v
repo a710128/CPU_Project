@@ -31,7 +31,6 @@ module decoder(
     input wire[31:0]    pc,
     input wire          noinst,
     input wire[31:0]    pred_jump,          // 分支预测跳转地址
-    input wire          is_delay_slot,      // 是否为延迟槽指令
     
     // 指令提交（更新寄存器状态）
     input wire          buffer_shift,
@@ -237,6 +236,7 @@ convt64to6 convt64to6_unused_reg (
     .found()
 );
 
+reg last_branch;
 always @(posedge clk) begin
     if (rst) begin
         reg_commit[0] <= 0;
@@ -304,6 +304,8 @@ always @(posedge clk) begin
         reg_active[29] <= 29;
         reg_active[30] <= 30;
         reg_active[31] <= 31;
+        
+        last_branch <= 0;
     end
     else if (clear) begin
         reg_active[0] <= reg_commit[0];
@@ -338,6 +340,7 @@ always @(posedge clk) begin
         reg_active[29] <= reg_commit[29];
         reg_active[30] <= reg_commit[30];
         reg_active[31] <= reg_commit[31];
+        last_branch <= 0;
         
         if (commit) begin // commit 同时 clear
             reg_commit[commit_reg] <= commit_regheap;
@@ -345,6 +348,11 @@ always @(posedge clk) begin
         end
     end
     else begin
+        // 默认情况
+        if (issue) begin
+            last_branch <= require_branch;
+        end
+    
         if (commit) begin
             reg_commit[commit_reg] <= commit_regheap;
         end
@@ -399,7 +407,7 @@ always @(*) begin
             issue_buffer_id <= unused_buffer;
             issue_pc <= pc;
             issue_j <= pred_jump;
-            issue_delay_slot <= is_delay_slot;
+            issue_delay_slot <= last_branch;
             
             if (if_tlbmiss) begin       // IF TLB miss
                 cant_issue <= 0;

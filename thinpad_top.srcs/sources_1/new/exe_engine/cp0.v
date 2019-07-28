@@ -140,7 +140,7 @@ always @(posedge clk) begin
         cp0_regs[11] <= 0;
         cp0_regs[12] <= 0;  // SR
         cp0_regs[13] <= 0;
-        cp0_regs[14] <= 0;
+        cp0_regs[14] <= 32'h12345678; // EPC
         cp0_regs[15] <= 32'h80001000;  // EBASE
         cp0_regs[16] <= 0;
         cp0_regs[17] <= 0;
@@ -216,7 +216,7 @@ always @(posedge clk) begin
         
         if (cp0_exception) begin
             cp0_regs[CAUSE][6:2] <= cp0_excode;
-            if (cp0[STATUS][1] == 1'b0) begin
+            if (cp0_regs[STATUS][1] == 1'b0) begin
                 cp0_regs[CAUSE][31] <= cp0_exc_ds;
                 cp0_regs[STATUS][1] <= 1'b1;
                 cp0_regs[EPC] <= cp0_exc_ds ? (cp0_exc_pc - 32'd4) : cp0_exc_pc;

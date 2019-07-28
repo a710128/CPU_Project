@@ -125,7 +125,7 @@ wire        rom_ce;
 wire[9:0]   rom_addr;
 wire[31:0]  rom_data;
 blk_mem_gen_0 rom0 (
-  .clka(clk_100M),
+  .clka(~clk_100M),
   .ena(rom_ce),
   .addra(rom_addr),
   .douta(rom_data)
@@ -135,6 +135,7 @@ blk_mem_gen_0 rom0 (
 wire    uart_data_read, uart_data_write;
 wire    uart_data_ready, uart_busy;
 wire[7:0]   uart_data_in,   uart_data_out;
+
 uart uart_inst (
     .clk_50M(clk_50M),
     .rst(rst),
@@ -147,6 +148,8 @@ uart uart_inst (
     .uart_data_out(uart_data_out),
     .uart_busy(uart_busy)
 );
+
+
 
 /* ================== DPY ================= */
 // 7段数码管译码器演示，将number用16进制显示在数码管上面
@@ -233,6 +236,7 @@ wire[31:0]  mem_data_write; // from exe
 wire[4:0]   mem_bytemode;
 wire        mem_avail;
 wire[31:0]  mem_data_read;
+
 
 mem mem_inst (
     .clk_50M(clk_50M),
@@ -329,7 +333,6 @@ assign if_addr = next_PC_paddr;
 reg         i_if_id_tlbmiss;
 reg[31:0]   i_if_id_pc;
 wire        i_if_id_noinst;     // no instruction
-wire        i_if_id_delay_slot;
 reg         i_if_id_rst;
 assign i_if_id_noinst = if_skip | i_if_id_rst;
 
@@ -351,9 +354,9 @@ reg[31:0]   o_if_id_inst;       // To decode, branch_predictor
 reg         o_if_id_tlbmiss;    // To decode
 reg[31:0]   o_if_id_pc;         // To decode, branch_predictor
 reg         o_if_id_noinst;     // To decode, branch_predictor
-reg         o_if_id_delay_slot;
 wire[31:0]  bp_jump;            // From branch predictor
 wire        bp_delay_slot;      // From branch predictor
+reg         o_if_id_ifskip;
 
 wire        pc_jump;
 wire[31:0]  pc_jump_addr;            // 回传实际跳转地址
@@ -366,14 +369,14 @@ always @(posedge clk_50M) begin
         o_if_id_pc <= 0;
         o_if_id_inst <= 0;
         o_if_id_noinst <= 1;
-        o_if_id_delay_slot <= 0;
+        o_if_id_ifskip <= 0;
     end
     else if (!cant_issue) begin
         o_if_id_tlbmiss <= i_if_id_tlbmiss;
         o_if_id_pc <= i_if_id_pc;
         o_if_id_inst <= if_data;
         o_if_id_noinst <= i_if_id_noinst;
-        o_if_id_delay_slot <= i_if_id_delay_slot;
+        o_if_id_ifskip <= if_skip;
     end
 end
 
@@ -392,7 +395,6 @@ wire[5:0]   assign_reg_id, issue_ri_id, issue_rj_id, issue_uop;
 wire[31:0]  issue_meta, issue_pc, issue_j;
 wire        buffer_shift;
 
-assign bp_delay_slot = o_if_id_delay_slot;
 
 decoder decoder_inst(
     .clk(clk_50M),
@@ -405,7 +407,6 @@ decoder decoder_inst(
     .pc(o_if_id_pc),
     .noinst(o_if_id_noinst),
     .pred_jump(bp_jump),          // 分支预测跳转地址
-    .is_delay_slot(bp_delay_slot),      // 是否为延迟槽指令
     
     // 指令提交（更新寄存器状态）
     .buffer_shift(buffer_shift),
@@ -578,6 +579,7 @@ branch_predictor branch_predictor_inst(
     
     .current_entryHI(cp0_ENTRYHI[7:0]),
     
+    .if_skip(o_if_id_ifskip),
     .noinst(o_if_id_noinst),
     .inst(o_if_id_inst),
     .pc(i_if_id_pc),
@@ -586,8 +588,7 @@ branch_predictor branch_predictor_inst(
     .feed_pc(feed_bp_pc),
     .feed_res(feed_bp_res),
     
-    .pc_pred(pred_pc),
-    .delay_slot(i_if_id_delay_slot)
+    .pc_pred(pred_pc)
 );
 
 

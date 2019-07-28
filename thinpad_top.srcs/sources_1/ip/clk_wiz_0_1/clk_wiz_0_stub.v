@@ -1,7 +1,7 @@
 // Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
-// Date        : Sun Jul 28 02:36:42 2019
+// Date        : Sun Jul 28 04:25:46 2019
 // Host        : DESKTOP-R77VRGM running 64-bit major release  (build 9200)
 // Command     : write_verilog -force -mode synth_stub
 //               c:/Users/a710128/Desktop/cpu/nw/thinpad_top.srcs/sources_1/ip/clk_wiz_0_1/clk_wiz_0_stub.v

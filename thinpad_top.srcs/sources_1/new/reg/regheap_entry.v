@@ -63,7 +63,7 @@ reg         last_commit;    // 是否是最后一次commit的寄存器
 
 assign reg_component_id = assign_component;
 assign reg_used = used;
-assign reg_available = (assign_reg == 0) ? 1 : available;
+assign reg_available = (assign_reg == 0) ? used : available;
 assign reg_val = (assign_reg == 0) ? 0 : val;
 
 
@@ -85,11 +85,14 @@ always @(posedge clk) begin
         end
     end
     else if (clear) begin
-        
-        if (commit && used && available && (commit_regid == assign_reg)) begin // 在clear的同时有commit且自己已经准备好，且被使用，且和自己相关的寄存器被提交 
+        if (commit && used && (commit_regid == assign_reg)) begin // 在clear的同时有commit，且被使用，且和自己相关的寄存器被提交 
             if (commit_regheap == reg_id) begin // 自己被提交
                 last_commit <= 1;
                 // 啥也不干
+                if (commit_wb && force_update) begin
+                    available <= 1;
+                    val <= force_value;
+                end
             end
             else begin
                 // 不是自己被提交则清空

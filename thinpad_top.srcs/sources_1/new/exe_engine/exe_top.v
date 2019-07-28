@@ -380,7 +380,7 @@ rob_commit rob_commit_inst(
     .i_status( buffer_commit ? 4'd0 : commit_buffer_status ),               // 状态
     .o_status( commit_buffer_status ),
     
-    .intq( (hardint != 6'b000000) && cp0_SR[0] ),                   // 是否有外部中断
+    .intq((cp0_SR[1] == 0) && ((hardint & cp0_SR[15:10]) != 6'b000000) && (cp0_SR[0] == 1) ),                   // 是否有外部中断 (  !SR_exl && (intreq & SR_im != 0) && SR_ie  )
     .tlb_exc( commit_buffer_tlb_exception ),
     .normal_exc( commit_buffer_normal_exception ),
     .cp0_SR ( cp0_SR ),

@@ -104,6 +104,7 @@ parameter STATUS_MEM1 = 3;
 parameter STATUS_CP0_1  = 4;
 parameter STATUS_ERET_0 = 5;
 parameter STATUS_ERET_1 = 6;
+parameter STATUS_FORCE_COMMIT = 7;
 
 wire[141:0]     inp;
 assign inp = issue ? {1'b1, issue_inp} : rob_inp;
@@ -385,11 +386,7 @@ always @(posedge clk) begin
                                 endcase
                             end
                             3'd3: begin // MFHI/LO
-                                commit <= 1;
-                                commit_upd <= i_result_reg;
-                                commit_reg <= i_result_reg_id;
-                                commit_regheap <= i_result_regheap;
-                                
+                                status <= STATUS_FORCE_COMMIT;
                                 force_upd <= 1;
                                 force_upd_val <= i_meta[0] ? reg_lo : reg_hi;
                             end
@@ -468,32 +465,40 @@ always @(posedge clk) begin
                 end
                 else if (i_status == STATUS_MEM1) begin
                     if (mem_avail) begin
-                        commit <= 1;
-                        commit_upd <= i_result_reg;
-                        commit_reg <= i_result_reg_id;
-                        commit_regheap <= i_result_regheap;
+                        
                         if (i_uop == 6'd0 || i_uop == 6'd1 || i_uop == 6'd2 ) begin
                             // Store
+                            commit <= 1;
+                            commit_upd <= i_result_reg;
+                            commit_reg <= i_result_reg_id;
+                            commit_regheap <= i_result_regheap;
                         end
                         else begin
                             // Load
+                            status <= STATUS_FORCE_COMMIT;
                             force_upd <= 1;
                             force_upd_val <= mem_read_data;
                         end
-                        
+                    end
+                    else begin
+                        status <= STATUS_MEM1;
                     end
                 end
                 else if (i_status == STATUS_CP0_0) begin
                     status <= STATUS_CP0_1;
                 end
                 else if (i_status == STATUS_CP0_1) begin
-                    commit <= 1;
-                    commit_upd <= i_result_reg;
-                    commit_reg <= i_result_reg_id;
-                    commit_regheap <= i_result_regheap;
+                    
                     if (i_result_reg) begin
                         force_upd <= 1;
                         force_upd_val <= cp0_result;
+                        status <= STATUS_FORCE_COMMIT;
+                    end
+                    else begin
+                        commit <= 1;
+                        commit_upd <= i_result_reg;
+                        commit_reg <= i_result_reg_id;
+                        commit_regheap <= i_result_regheap;
                     end
                 end
                 else if (i_status == STATUS_ERET_0) begin
@@ -515,6 +520,12 @@ always @(posedge clk) begin
                         normal_exc <= 1;
                         mem_vaddr <= cp0_result;
                     end
+                end
+                else if (i_status == STATUS_FORCE_COMMIT) begin
+                    commit <= 1;
+                    commit_upd <= i_result_reg;
+                    commit_reg <= i_result_reg_id;
+                    commit_regheap <= i_result_regheap;
                 end
             end
         

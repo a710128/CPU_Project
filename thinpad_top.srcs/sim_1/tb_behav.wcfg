@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="tb" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="83547500400000fs"></ZoomStartTime>
+      <ZoomEndTime time="83547887200001fs"></ZoomEndTime>
+      <Cursor1Time time="83547758600000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="222"></NameColumnWidth>
+      <ValueColumnWidth column_width="78"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="90" />
+   <wave_markers>
+      <marker time="28450315441000" label="" />
+      <marker time="12200800000" label="" />
+      <marker time="28452704574000" label="" />
+      <marker time="83546350000000" label="" />
+      <marker time="83547746600000" label="" />
+   </wave_markers>
+   <wvobject fp_name="/tb/clk_50M" type="logic">
+      <obj_property name="ElementShortName">clk_50M</obj_property>
+      <obj_property name="ObjectShortName">clk_50M</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/clk_11M0592" type="logic">
+      <obj_property name="ElementShortName">clk_11M0592</obj_property>
+      <obj_property name="ObjectShortName">clk_11M0592</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/clock_btn" type="logic">
+      <obj_property name="ElementShortName">clock_btn</obj_property>
+      <obj_property name="ObjectShortName">clock_btn</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/reset_btn" type="logic">
+      <obj_property name="ElementShortName">reset_btn</obj_property>
+      <obj_property name="ObjectShortName">reset_btn</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/touch_btn" type="array">
+      <obj_property name="ElementShortName">touch_btn[3:0]</obj_property>
+      <obj_property name="ObjectShortName">touch_btn[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dip_sw" type="array">
+      <obj_property name="ElementShortName">dip_sw[31:0]</obj_property>
+      <obj_property name="ObjectShortName">dip_sw[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/dpy_number" type="array">
+      <obj_property name="ElementShortName">dpy_number[7:0]</obj_property>
+      <obj_property name="ObjectShortName">dpy_number[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/leds" type="array">
+      <obj_property name="ElementShortName">leds[15:0]</obj_property>
+      <obj_property name="ObjectShortName">leds[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dpy0" type="array">
+      <obj_property name="ElementShortName">dpy0[7:0]</obj_property>
+      <obj_property name="ObjectShortName">dpy0[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dpy1" type="array">
+      <obj_property name="ElementShortName">dpy1[7:0]</obj_property>
+      <obj_property name="ObjectShortName">dpy1[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/uart_inst/uart_read_buffer" type="array">
+      <obj_property name="ElementShortName">uart_read_buffer[7:0]</obj_property>
+      <obj_property name="ObjectShortName">uart_read_buffer[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/uart_inst/uart_data_ready" type="logic">
+      <obj_property name="ElementShortName">uart_data_ready</obj_property>
+      <obj_property name="ObjectShortName">uart_data_ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/uart_inst/uart_busy" type="logic">
+      <obj_property name="ElementShortName">uart_busy</obj_property>
+      <obj_property name="ObjectShortName">uart_busy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/uart_inst/uart_read_buffer" type="array">
+      <obj_property name="ElementShortName">uart_read_buffer[7:0]</obj_property>
+      <obj_property name="ObjectShortName">uart_read_buffer[7:0]</obj_property>
+      <obj_property name="Radix">ASCIIRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/uart_inst/ext_uart_tx" type="array">
+      <obj_property name="ElementShortName">ext_uart_tx[7:0]</obj_property>
+      <obj_property name="ObjectShortName">ext_uart_tx[7:0]</obj_property>
+      <obj_property name="Radix">ASCIIRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/txd" type="logic">
+      <obj_property name="ElementShortName">txd</obj_property>
+      <obj_property name="ObjectShortName">txd</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/rxd" type="logic">
+      <obj_property name="ElementShortName">rxd</obj_property>
+      <obj_property name="ObjectShortName">rxd</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/base_ram_data" type="array">
+      <obj_property name="ElementShortName">base_ram_data[31:0]</obj_property>
+      <obj_property name="ObjectShortName">base_ram_data[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/base_ram_addr" type="array">
+      <obj_property name="ElementShortName">base_ram_addr[19:0]</obj_property>
+      <obj_property name="ObjectShortName">base_ram_addr[19:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/base_ram_be_n" type="array">
+      <obj_property name="ElementShortName">base_ram_be_n[3:0]</obj_property>
+      <obj_property name="ObjectShortName">base_ram_be_n[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/base_ram_ce_n" type="logic">
+      <obj_property name="ElementShortName">base_ram_ce_n</obj_property>
+      <obj_property name="ObjectShortName">base_ram_ce_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/base_ram_oe_n" type="logic">
+      <obj_property name="ElementShortName">base_ram_oe_n</obj_property>
+      <obj_property name="ObjectShortName">base_ram_oe_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/base_ram_we_n" type="logic">
+      <obj_property name="ElementShortName">base_ram_we_n</obj_property>
+      <obj_property name="ObjectShortName">base_ram_we_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/ext_ram_data" type="array">
+      <obj_property name="ElementShortName">ext_ram_data[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_data[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/ext_ram_addr" type="array">
+      <obj_property name="ElementShortName">ext_ram_addr[19:0]</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_addr[19:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/ext_ram_be_n" type="array">
+      <obj_property name="ElementShortName">ext_ram_be_n[3:0]</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_be_n[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/ext_ram_ce_n" type="logic">
+      <obj_property name="ElementShortName">ext_ram_ce_n</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_ce_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/ext_ram_oe_n" type="logic">
+      <obj_property name="ElementShortName">ext_ram_oe_n</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_oe_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/ext_ram_we_n" type="logic">
+      <obj_property name="ElementShortName">ext_ram_we_n</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_we_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/flash_a" type="array">
+      <obj_property name="ElementShortName">flash_a[22:0]</obj_property>
+      <obj_property name="ObjectShortName">flash_a[22:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/flash_d" type="array">
+      <obj_property name="ElementShortName">flash_d[15:0]</obj_property>
+      <obj_property name="ObjectShortName">flash_d[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/flash_rp_n" type="logic">
+      <obj_property name="ElementShortName">flash_rp_n</obj_property>
+      <obj_property name="ObjectShortName">flash_rp_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/flash_vpen" type="logic">
+      <obj_property name="ElementShortName">flash_vpen</obj_property>
+      <obj_property name="ObjectShortName">flash_vpen</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/flash_ce_n" type="logic">
+      <obj_property name="ElementShortName">flash_ce_n</obj_property>
+      <obj_property name="ObjectShortName">flash_ce_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/flash_oe_n" type="logic">
+      <obj_property name="ElementShortName">flash_oe_n</obj_property>
+      <obj_property name="ObjectShortName">flash_oe_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/flash_we_n" type="logic">
+      <obj_property name="ElementShortName">flash_we_n</obj_property>
+      <obj_property name="ObjectShortName">flash_we_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/flash_byte_n" type="logic">
+      <obj_property name="ElementShortName">flash_byte_n</obj_property>
+      <obj_property name="ObjectShortName">flash_byte_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/pred_pc" type="array">
+      <obj_property name="ElementShortName">pred_pc[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pred_pc[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/next_PC_vaddr" type="array">
+      <obj_property name="ElementShortName">next_PC_vaddr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">next_PC_vaddr[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/pc_jump_addr" type="array">
+      <obj_property name="ElementShortName">pc_jump_addr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pc_jump_addr[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/pc_jump" type="logic">
+      <obj_property name="ElementShortName">pc_jump</obj_property>
+      <obj_property name="ObjectShortName">pc_jump</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/noinst" type="logic">
+      <obj_property name="ElementShortName">noinst</obj_property>
+      <obj_property name="ObjectShortName">noinst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/pc" type="array">
+      <obj_property name="ElementShortName">pc[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pc[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/inst" type="array">
+      <obj_property name="ElementShortName">inst[31:0]</obj_property>
+      <obj_property name="ObjectShortName">inst[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/cant_issue" type="logic">
+      <obj_property name="ElementShortName">cant_issue</obj_property>
+      <obj_property name="ObjectShortName">cant_issue</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/issue" type="logic">
+      <obj_property name="ElementShortName">issue</obj_property>
+      <obj_property name="ObjectShortName">issue</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/assign_reg" type="logic">
+      <obj_property name="ElementShortName">assign_reg</obj_property>
+      <obj_property name="ObjectShortName">assign_reg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/issue_reg" type="array">
+      <obj_property name="ElementShortName">issue_reg[4:0]</obj_property>
+      <obj_property name="ObjectShortName">issue_reg[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/assign_reg_id" type="array">
+      <obj_property name="ElementShortName">assign_reg_id[5:0]</obj_property>
+      <obj_property name="ObjectShortName">assign_reg_id[5:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/issue_buffer_id" type="array">
+      <obj_property name="ElementShortName">issue_buffer_id[2:0]</obj_property>
+      <obj_property name="ObjectShortName">issue_buffer_id[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/assign_component" type="logic">
+      <obj_property name="ElementShortName">assign_component</obj_property>
+      <obj_property name="ObjectShortName">assign_component</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/assign_component_id" type="array">
+      <obj_property name="ElementShortName">assign_component_id[2:0]</obj_property>
+      <obj_property name="ObjectShortName">assign_component_id[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/issue_ri" type="logic">
+      <obj_property name="ElementShortName">issue_ri</obj_property>
+      <obj_property name="ObjectShortName">issue_ri</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/issue_ri_id" type="array">
+      <obj_property name="ElementShortName">issue_ri_id[5:0]</obj_property>
+      <obj_property name="ObjectShortName">issue_ri_id[5:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/issue_rj" type="logic">
+      <obj_property name="ElementShortName">issue_rj</obj_property>
+      <obj_property name="ObjectShortName">issue_rj</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/issue_rj_id" type="array">
+      <obj_property name="ElementShortName">issue_rj_id[5:0]</obj_property>
+      <obj_property name="ObjectShortName">issue_rj_id[5:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/issue_commit_op" type="array">
+      <obj_property name="ElementShortName">issue_commit_op[2:0]</obj_property>
+      <obj_property name="ObjectShortName">issue_commit_op[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/issue_pc" type="array">
+      <obj_property name="ElementShortName">issue_pc[31:0]</obj_property>
+      <obj_property name="ObjectShortName">issue_pc[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/decoder_inst/issue_delay_slot" type="logic">
+      <obj_property name="ElementShortName">issue_delay_slot</obj_property>
+      <obj_property name="ObjectShortName">issue_delay_slot</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/commit" type="logic">
+      <obj_property name="ElementShortName">commit</obj_property>
+      <obj_property name="ObjectShortName">commit</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/commit_upd" type="logic">
+      <obj_property name="ElementShortName">commit_upd</obj_property>
+      <obj_property name="ObjectShortName">commit_upd</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/commit_reg" type="array">
+      <obj_property name="ElementShortName">commit_reg[4:0]</obj_property>
+      <obj_property name="ObjectShortName">commit_reg[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/commit_regheap" type="array">
+      <obj_property name="ElementShortName">commit_regheap[5:0]</obj_property>
+      <obj_property name="ObjectShortName">commit_regheap[5:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/tlb_exc" type="logic">
+      <obj_property name="ElementShortName">tlb_exc</obj_property>
+      <obj_property name="ObjectShortName">tlb_exc</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/normal_exc" type="logic">
+      <obj_property name="ElementShortName">normal_exc</obj_property>
+      <obj_property name="ObjectShortName">normal_exc</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/commit_op" type="array">
+      <obj_property name="ElementShortName">commit_op[2:0]</obj_property>
+      <obj_property name="ObjectShortName">commit_op[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/excode" type="array">
+      <obj_property name="ElementShortName">excode[4:0]</obj_property>
+      <obj_property name="ObjectShortName">excode[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/mem_inst/mem_we" type="logic">
+      <obj_property name="ElementShortName">mem_we</obj_property>
+      <obj_property name="ObjectShortName">mem_we</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/mem_inst/mem_addr" type="array">
+      <obj_property name="ElementShortName">mem_addr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">mem_addr[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/mmu_inst/mem_qe" type="logic">
+      <obj_property name="ElementShortName">mem_qe</obj_property>
+      <obj_property name="ObjectShortName">mem_qe</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/mmu_inst/mem_vaddr" type="array">
+      <obj_property name="ElementShortName">mem_vaddr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">mem_vaddr[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/mmu_inst/mem_paddr" type="array">
+      <obj_property name="ElementShortName">mem_paddr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">mem_paddr[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/mem_inst/mem_data_write" type="array">
+      <obj_property name="ElementShortName">mem_data_write[31:0]</obj_property>
+      <obj_property name="ObjectShortName">mem_data_write[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/mem_inst/mem_data" type="array">
+      <obj_property name="ElementShortName">mem_data[31:0]</obj_property>
+      <obj_property name="ObjectShortName">mem_data[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/pc" type="array">
+      <obj_property name="ElementShortName">pc[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pc[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/meta" type="array">
+      <obj_property name="ElementShortName">meta[31:0]</obj_property>
+      <obj_property name="ObjectShortName">meta[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/jump" type="array">
+      <obj_property name="ElementShortName">jump[31:0]</obj_property>
+      <obj_property name="ObjectShortName">jump[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/ds" type="logic">
+      <obj_property name="ElementShortName">ds</obj_property>
+      <obj_property name="ObjectShortName">ds</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/change_pc_ds" type="logic">
+      <obj_property name="ElementShortName">change_pc_ds</obj_property>
+      <obj_property name="ObjectShortName">change_pc_ds</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/change_pc_imm" type="logic">
+      <obj_property name="ElementShortName">change_pc_imm</obj_property>
+      <obj_property name="ObjectShortName">change_pc_imm</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/change_pc_to" type="array">
+      <obj_property name="ElementShortName">change_pc_to[31:0]</obj_property>
+      <obj_property name="ObjectShortName">change_pc_to[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/mem_inst/mem_data_write" type="array">
+      <obj_property name="ElementShortName">mem_data_write[31:0]</obj_property>
+      <obj_property name="ObjectShortName">mem_data_write[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/mem_avail" type="logic">
+      <obj_property name="ElementShortName">mem_avail</obj_property>
+      <obj_property name="ObjectShortName">mem_avail</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/status" type="array">
+      <obj_property name="ElementShortName">status[3:0]</obj_property>
+      <obj_property name="ObjectShortName">status[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/cp0_instance/cp0_ce" type="logic">
+      <obj_property name="ElementShortName">cp0_ce</obj_property>
+      <obj_property name="ObjectShortName">cp0_ce</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/cp0_instance/cp0_inst" type="array">
+      <obj_property name="ElementShortName">cp0_inst[2:0]</obj_property>
+      <obj_property name="ObjectShortName">cp0_inst[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/cp0_instance/cp0_reg" type="array">
+      <obj_property name="ElementShortName">cp0_reg[4:0]</obj_property>
+      <obj_property name="ObjectShortName">cp0_reg[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/cp0_instance/cp0_putval" type="array">
+      <obj_property name="ElementShortName">cp0_putval[31:0]</obj_property>
+      <obj_property name="ObjectShortName">cp0_putval[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/cp0_instance/cp0_result" type="array">
+      <obj_property name="ElementShortName">cp0_result[31:0]</obj_property>
+      <obj_property name="ObjectShortName">cp0_result[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/cp0_instance/cp0_regs" type="array">
+      <obj_property name="ElementShortName">cp0_regs[31:0][31:0]</obj_property>
+      <obj_property name="ObjectShortName">cp0_regs[31:0][31:0]</obj_property>
+   </wvobject>
+</wave_config>

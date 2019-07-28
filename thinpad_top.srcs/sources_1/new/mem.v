@@ -177,7 +177,7 @@ assign  data_in[1] = base_ram_data;
 assign  data_in[2] = ext_ram_data;
 assign  data_in[3] = {24'b0, uart_data_in};
 assign  data_in[4] = {16'b0, flash_d};
-assign  data_in[5] = {30'b0, uart_data_ready, uart_busy};
+assign  data_in[5] = {30'b0, uart_data_ready, ~uart_busy};
 assign  data_in[6] = rom_data;
 
 wire[31:0]  output_data_n;
@@ -346,7 +346,7 @@ always @(*) begin
             end
         end
         else if (mem_addr[31:24] == 8'h1E) begin    // FLASH
-            i_cnt_req <= 3;
+            i_cnt_req <= 4;
             
             i_flash_ce_n <= 0;
             i_flash_a <= mem_addr[23:1];
@@ -360,6 +360,7 @@ always @(*) begin
             i_rom_ce <= 1;
             i_rom_addr <= mem_addr[11:2];
             i_output_sel <= 6;
+            
         end
     end
     else begin
