@@ -60,6 +60,8 @@ wire        feed_match = valid[feed_pc_index] && ( feed_bp_line[29:0] == feed_pc
 
 assign  no_jump = (feed_pc + 32'd8) == feed_res;
 
+reg[31:0]   last_pred;
+
 
 always @(posedge clk) begin
     if (rst) begin
@@ -85,6 +87,8 @@ always @(posedge clk) begin
             bp_line[feed_pc_index] <= { 1'b0, ~no_jump, feed_res[31:2], feed_pc_tag };
         end
     end
+    
+    last_pred <= pc_pred;
 end
 
 wire[7:0]       pc_index = pc[9:2];
@@ -120,20 +124,17 @@ always @(*) begin
         pc_pred <= pc + 32'd4;
     end
     else begin
-        /*
         if (if_skip) begin  // 如果当前IF被跳过，则保持预测不变
-            pc_pred <= pc_pred;
+            pc_pred <= last_pred;
         end
         else
         if (noinst) begin   // 不会执行到这个if里
-            pc_pred <= pc + 32'd4;
+            pc_pred <= last_pred;
         end
         else if (is_j || is_jal) begin
-            delay_slot <= 1;
             pc_pred <= { pc[31:28], inst[25:0], 2'b0 };
         end
         else if (is_jr || is_jalr || is_beq || is_bne || is_bgtz || is_blez || is_bltz || is_bltzal || is_bgez || is_bgezal) begin
-            delay_slot <= 1;
             if (pred_jump) begin
                 pc_pred <= { pc_bp_line[59:30], 2'b0 };
             end
@@ -144,14 +145,7 @@ always @(*) begin
         else begin
             pc_pred <= pc + 32'd4;
         end
-        */
-        if (is_j || is_jal || is_jr || is_jalr || is_beq || is_bne || is_bgtz || is_blez || is_bltz || is_bltzal || is_bgez || is_bgezal) begin
-            // pc_pred <= {pc[30:0], 1'b0} ;
-            pc_pred <= pc + 32'd4;
-        end
-        else begin
-            pc_pred <= pc + 32'd4;
-        end
+
     end
 end
 
