@@ -168,7 +168,7 @@ always @(posedge clk) begin
         tlbr <= 0;
         tlbwe <= 0;
         
-        if (cp0[COUNT] < cp0[COMPARE]) begin
+        if (cp0[COUNT] != cp0[COMPARE]) begin
             cp0_regs[COUNT] <= cp0_regs[COUNT] + 1;
         end
         

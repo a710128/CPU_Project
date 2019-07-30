@@ -103,8 +103,10 @@ module mem(
     // on-chip ROM
     output wire  rom_ce,
     output wire[9:0] rom_addr,
-    input wire[31:0] rom_data
+    input wire[31:0] rom_data,
     
+    // inst commit
+    input  wire inst_commit
 );
 
 /* ===================== unused  ==================== */
@@ -122,11 +124,53 @@ assign dm9k_ior_n = 1;
 assign dm9k_cs_n = 1;
 assign dm9k_pwrst_n = 1;
 
+/* ===================== Counter ==================== */
+parameter CPU_US_COUNT = 50;
+reg[63:0]       cycle_counter;
+wire[31:0]      cycle_counter_lo;
+wire[31:0]      cycle_counter_hi;
+assign cycle_counter_lo = cycle_counter[31:0];
+assign cycle_counter_hi = cycle_counter[63:32];
+reg[7:0]        cpu_ns_count;
+reg[63:0]       cpu_us_counter;
+wire[31:0]      us_counter_lo;
+wire[31:0]      us_counter_hi;
+assign us_counter_lo = cpu_us_counter[31:0];
+assign us_counter_hi = cpu_us_counter[63:32];
+reg[63:0]       inst_counter;
+wire[31:0]      inst_counter_lo;
+wire[31:0]      inst_counter_hi;
+assign inst_counter_lo = inst_counter[31:0];
+assign inst_counter_hi = inst_counter[63:32];
+always @(posedge clk_50M) begin
+    if (rst) begin
+        cpu_ns_count <= 8'b1;
+        cpu_us_counter <= 64'b0;
+        cycle_counter <= 64'b0;
+        inst_counter <= 64'b0;
+    end
+    else begin
+        cycle_counter <= cycle_counter + 64'b1;
+        if (inst_commit) begin
+            inst_counter <= inst_counter + 64'b1;
+        end
+        if (cpu_ns_count == CPU_US_COUNT) begin
+            cpu_ns_count <= 8'b1;
+            cpu_us_counter <= cpu_us_counter + 64'b1;
+        end
+        else begin
+            cpu_ns_count <= cpu_ns_count + 8'b1;
+        end
+    end
+    
+end
+
+
 
 /* ====================== input ===================== */
 reg         i_mem_req;
 reg[3:0]    i_cnt_req;
-reg[2:0]    i_output_sel;
+reg[3:0]    i_output_sel;
 
 reg[19:0]   i_base_ram_addr,    i_ext_ram_addr;
 reg[31:0]   i_base_ram_data,    i_ext_ram_data;
@@ -150,7 +194,7 @@ reg[9:0]    i_rom_addr;
 
 reg         o_mem_req;
 reg[3:0]    o_cnt_req;
-reg[2:0]    o_output_sel;
+reg[3:0]    o_output_sel;
 
 reg[19:0]   o_base_ram_addr,    o_ext_ram_addr;
 reg[31:0]   o_base_ram_data,    o_ext_ram_data;
@@ -171,7 +215,9 @@ reg         o_rom_ce;
 reg[9:0]    o_rom_addr;
 
 /*  ======================== output selector =======================  */
-wire[31:0]  data_in[6:0];
+wire[31:0]  data_in[12:0];
+wire[31:0]  data_in_ext[3:0];
+
 assign  data_in[0] = 0;
 assign  data_in[1] = base_ram_data;
 assign  data_in[2] = ext_ram_data;
@@ -180,9 +226,18 @@ assign  data_in[4] = {16'b0, flash_d};
 assign  data_in[5] = {30'b0, uart_data_ready, ~uart_busy};
 assign  data_in[6] = rom_data;
 
+assign  data_in[7] = cycle_counter_lo;
+assign  data_in[8] = cycle_counter_hi;
+assign  data_in[9] = us_counter_lo;
+assign  data_in[10] = us_counter_hi;
+
+assign  data_in[11] = inst_counter_lo;
+assign  data_in[12] = inst_counter_hi;
+
+
 wire[31:0]  output_data_n;
 reg[31:0]   output_data;
-assign  output_data_n = data_in[o_output_sel]; // 0: on input, 1: BASE ram, 2: EXT ram, 3: UART data, 4: flash, 5 UART status 
+assign  output_data_n = data_in[o_output_sel]; // 0: no input, 1: BASE ram, 2: EXT ram, 3: UART data, 4: flash, 5 UART status , 6: rom, 7:ext
 
 always @(*) begin   // 根据Bytemode调整输出
     case (o_bytemode)
@@ -250,7 +305,7 @@ assign flash_byte_n = 1;
 assign leds = o_leds;
 assign dpy_number = o_dpy_number;
 
-assign rom_ce = o_rom_ce;
+assign rom_ce = o_rom_ce;       // 时间不够
 assign rom_addr = o_rom_addr;
 
 assign  if_data = o_mem_req ? 32'b0 : output_data_n;
@@ -316,6 +371,30 @@ always @(*) begin
                 16'h03FC: begin // UART status
                     i_cnt_req <= 0;
                     i_output_sel <= 5;
+                end
+                16'h0500: begin // cycle lo
+                    i_cnt_req <= 0;
+                    i_output_sel <= 7;
+                end
+                16'h0504: begin // cycle hi
+                    i_cnt_req <= 0;
+                    i_output_sel <= 8;
+                end
+                16'h0600: begin // us lo
+                    i_cnt_req <= 0;
+                    i_output_sel <= 9;
+                end
+                16'h0604: begin // us hi
+                    i_cnt_req <= 0;
+                    i_output_sel <= 10;
+                end
+                16'h0700: begin // inst lo
+                    i_cnt_req <= 0;
+                    i_output_sel <= 11;
+                end
+                16'h0704: begin // inst hi
+                    i_cnt_req <= 0;
+                    i_output_sel <= 12;
                 end
                 default: ;
             endcase
@@ -404,38 +483,7 @@ always @(*) begin
 end
 
 always @(posedge clk_50M) begin
-    if (rst) begin
-        o_mem_req <= 0;
-        o_cnt_req <= 0;
-        o_output_sel <= 0;
-        o_base_ram_addr <= 0;
-        o_ext_ram_addr <= 0;
-        o_base_ram_data <= 0;
-        o_ext_ram_data <= 0;
-        o_bytemode <= 0;
-        o_base_ram_ce_n <= 1;
-        o_ext_ram_ce_n <= 1;
-        o_base_ram_oe_n <= 1;
-        o_ext_ram_oe_n <= 1;
-        o_base_ram_we_n <= 1;
-        o_ext_ram_we_n <= 1;
-        o_uart_data_read <= 0;
-        o_uart_data_write <= 0;
-        o_uart_data_out <= 0;
-        o_flash_a <= 0;
-        o_flash_d <= 0;
-        o_flash_ce_n <= 1;
-        o_flash_oe_n <= 1;
-        o_flash_we_n <= 1;
-        o_leds <= 0;
-        o_dpy_number <= 0;
-        o_rom_ce <= 0;
-        o_rom_addr <= 0;
-    end
-    else if (o_cnt_req) begin
-        o_cnt_req <= o_cnt_req - 1;
-    end
-    else begin
+    if (!rst && (o_cnt_req == 0)) begin
         o_mem_req <= i_mem_req;
         o_cnt_req <= i_cnt_req;
         o_output_sel <= i_output_sel;
@@ -463,6 +511,38 @@ always @(posedge clk_50M) begin
         o_rom_ce <= i_rom_ce;
         o_rom_addr <= i_rom_addr;
     end
+    else if (!rst) begin
+        o_cnt_req <= o_cnt_req - 1;
+    end
+    else begin
+        o_mem_req <= 0;
+        o_cnt_req <= 0;
+        o_output_sel <= 0;
+        o_base_ram_addr <= 0;
+        o_ext_ram_addr <= 0;
+        o_base_ram_data <= 0;
+        o_ext_ram_data <= 0;
+        o_bytemode <= 0;
+        o_base_ram_ce_n <= 1;
+        o_ext_ram_ce_n <= 1;
+        o_base_ram_oe_n <= 1;
+        o_ext_ram_oe_n <= 1;
+        o_base_ram_we_n <= 1;
+        o_ext_ram_we_n <= 1;
+        o_uart_data_read <= 0;
+        o_uart_data_write <= 0;
+        o_uart_data_out <= 0;
+        o_flash_a <= 0;
+        o_flash_d <= 0;
+        o_flash_ce_n <= 1;
+        o_flash_oe_n <= 1;
+        o_flash_we_n <= 1;
+        o_leds <= 0;
+        o_dpy_number <= 0;
+        o_rom_ce <= 0;
+        o_rom_addr <= 0;
+    end
+    
 end
 
 endmodule

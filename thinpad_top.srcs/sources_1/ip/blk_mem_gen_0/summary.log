@@ -12,9 +12,9 @@ Memory Depth               :     [1024]
 Block RAM resource(s) (18K BRAMs)    : [0]
 Block RAM resource(s) (36K BRAMs)    : [1]
 ----------------------------------------------------------------------------------
-Clock A Frequency          :         [100]
+Clock A Frequency          :         [200]
 Port A Enable Rate         :         [100]
 Port A Write Rate          :         [0]
 ----------------------------------------------------------------------------------
-Estimated Power for IP     :     2.622 mW
+Estimated Power for IP     :     5.244 mW
 ----------------------------------------------------------------------------------

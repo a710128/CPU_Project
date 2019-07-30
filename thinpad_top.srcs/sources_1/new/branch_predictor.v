@@ -111,7 +111,8 @@ wire        is_bltz     =   (op == 6'b000001) && (inst[20:16] == 5'b00000);
 wire        is_bltzal   =   (op == 6'b000001) && (inst[20:16] == 5'b10000);
 wire        is_bgez     =   (op == 6'b000001) && (inst[20:16] == 5'b00001);
 wire        is_bgezal   =   (op == 6'b000001) && (inst[20:16] == 5'b10001);
-
+wire        is_b        =   (op == 6'b000100) && (inst[25:16] == 10'b0);
+wire        is_bal      =   (op == 6'b000001) && (inst[25:16] == 10'b0000010001);
 
 always @(*) begin
     if (status == STATUS_INIT_0) begin
@@ -134,6 +135,9 @@ always @(*) begin
         else if (is_j || is_jal) begin
             pc_pred <= { pc[31:28], inst[25:0], 2'b0 };
         end
+        else if (is_b || is_bal) begin
+            pc_pred <= pc +  {{14{inst[15]}} , inst[15:0], 2'b00};
+        end
         else if (is_jr || is_jalr || is_beq || is_bne || is_bgtz || is_blez || is_bltz || is_bltzal || is_bgez || is_bgezal) begin
             if (pred_jump) begin
                 pc_pred <= { pc_bp_line[59:30], 2'b0 };
@@ -145,7 +149,6 @@ always @(*) begin
         else begin
             pc_pred <= pc + 32'd4;
         end
-
     end
 end
 

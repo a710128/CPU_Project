@@ -236,6 +236,7 @@ wire[31:0]  mem_data_write; // from exe
 wire[4:0]   mem_bytemode;
 wire        mem_avail;
 wire[31:0]  mem_data_read;
+wire        buffer_shift;
 
 
 mem mem_inst (
@@ -321,7 +322,9 @@ mem mem_inst (
     // on-chip ROM
     .rom_ce(rom_ce),
     .rom_addr(rom_addr),
-    .rom_data(rom_data)
+    .rom_data(rom_data),
+    
+    .inst_commit(buffer_shift)
 );
 
 
@@ -393,7 +396,7 @@ wire[2:0]   issue_buffer_id, assign_component_id, issue_commit_op;
 wire[4:0]   issue_reg, issue_excode;
 wire[5:0]   assign_reg_id, issue_ri_id, issue_rj_id, issue_uop;
 wire[31:0]  issue_meta, issue_pc, issue_j;
-wire        buffer_shift;
+
 
 
 decoder decoder_inst(
@@ -519,7 +522,7 @@ exe_top exec_inst(
 /* ========= CP0 ========= */
 wire[31:0]  cp0_COUNTER;
 wire[31:0]  cp0_COMPARE;
-wire tinmer_interrupt = (cp0_COUNTER >= cp0_COMPARE) ? 1'b1 : 1'b0;
+wire tinmer_interrupt = (cp0_COUNTER == cp0_COMPARE) ? 1'b1 : 1'b0;
 wire[5:0]   ip_7_2 = { tinmer_interrupt, 1'b0, 1'b0, uart_data_ready, 1'b0, 1'b0 };
 assign hardint = ip_7_2;
 

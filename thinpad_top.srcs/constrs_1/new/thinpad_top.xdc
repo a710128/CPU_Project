@@ -321,5 +321,12 @@ set_property CFGBVS VCCO [current_design]
 set_property CONFIG_VOLTAGE 3.3 [current_design]
 
 
-set_output_delay -clock [get_clocks clk_50M] 0.500 [list [get_ports -filter { NAME =~  "*" && DIRECTION =~  "*INOUT*" }] [get_ports -filter { NAME =~  "*" && DIRECTION =~  "*OUT*" }]]
-set_input_delay -clock [get_clocks clk_50M] 0.500 [list [get_ports -filter { NAME =~  "*" && DIRECTION =~  "*IN*" }] [get_ports -filter { NAME =~  "*" && DIRECTION =~  "*INOUT*" }]]
+
+
+
+set_input_delay -clock [get_clocks clk_50M] 19.000 [get_ports -filter { NAME =~  "*" && DIRECTION == "INOUT" }]
+set_output_delay -clock [get_clocks clk_50M] 11.000 [list [get_ports {{base_ram_addr[0]} {base_ram_addr[1]} {base_ram_addr[2]} {base_ram_addr[3]} {base_ram_addr[4]} {base_ram_addr[5]} {base_ram_addr[6]} {base_ram_addr[7]} {base_ram_addr[8]} {base_ram_addr[9]} {base_ram_addr[10]} {base_ram_addr[11]} {base_ram_addr[12]} {base_ram_addr[13]} {base_ram_addr[14]} {base_ram_addr[15]} {base_ram_addr[16]} {base_ram_addr[17]} {base_ram_addr[18]} {base_ram_addr[19]} {base_ram_be_n[0]} {base_ram_be_n[1]} {base_ram_be_n[2]} {base_ram_be_n[3]} base_ram_ce_n base_ram_oe_n base_ram_we_n {ext_ram_addr[0]} {ext_ram_addr[1]} {ext_ram_addr[2]} {ext_ram_addr[3]} {ext_ram_addr[4]} {ext_ram_addr[5]} {ext_ram_addr[6]} {ext_ram_addr[7]} {ext_ram_addr[8]} {ext_ram_addr[9]} {ext_ram_addr[10]} {ext_ram_addr[11]} {ext_ram_addr[12]} {ext_ram_addr[13]} {ext_ram_addr[14]} {ext_ram_addr[15]} {ext_ram_addr[16]} {ext_ram_addr[17]} {ext_ram_addr[18]} {ext_ram_addr[19]} {ext_ram_be_n[0]} {ext_ram_be_n[1]} {ext_ram_be_n[2]} {ext_ram_be_n[3]} ext_ram_ce_n ext_ram_oe_n ext_ram_we_n {flash_a[0]} {flash_a[1]} {flash_a[2]} {flash_a[3]} {flash_a[4]} {flash_a[5]} {flash_a[6]} {flash_a[7]} {flash_a[8]} {flash_a[9]} {flash_a[10]} {flash_a[11]} {flash_a[12]} {flash_a[13]} {flash_a[14]} {flash_a[15]} {flash_a[16]} {flash_a[17]} {flash_a[18]} {flash_a[19]} {flash_a[20]} {flash_a[21]} {flash_a[22]} flash_byte_n flash_ce_n flash_oe_n flash_rp_n flash_vpen flash_we_n}] [get_ports -filter { NAME =~  "*" && DIRECTION == "INOUT" }]]
+
+set_output_delay -clock [get_clocks clk_50M] 8.000 [get_ports -filter { NAME =~  "*" && DIRECTION == "INOUT" }]
+
+
