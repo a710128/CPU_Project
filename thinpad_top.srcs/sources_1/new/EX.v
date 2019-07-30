@@ -62,7 +62,9 @@ module EX(
     input wire[4:0] tlb_query_idx,
     input wire[95:0] tlb_query_entry,
     output reg tlbp_query,
-    output reg tlbr_query
+    output reg tlbr_query,
+    
+    output reg inst_commit
     );
 
 wire[3:0] ffclo[0:31];
@@ -145,6 +147,9 @@ always @(*) begin
     tlbr_query <= 1'b0;
     
     last_eret <= 1'b0;
+    inst_commit <= 1'b0;
+    
+    
     
     // ALU
     if (intq) begin
@@ -180,6 +185,7 @@ always @(*) begin
         case (func)
         6'b100000: if (jpc[10:6] != 5'b00000) `RI_EXC else begin
         // ADD
+            inst_commit <= ~ex_stop;
             if (ext_add[32] == ext_add[31]) begin
                 result <= data_a + data_b;
                 bubble_cnt <= bubble_cnt_dec;
@@ -201,6 +207,7 @@ always @(*) begin
         
         6'b100001: if (jpc[10:6] != 5'b00000) `RI_EXC else begin
         // ADDU
+            inst_commit <= ~ex_stop;
             result <= data_a + data_b;
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -210,6 +217,7 @@ always @(*) begin
         
         6'b100010: if (jpc[10:6] != 5'b00000) `RI_EXC else begin
         // SUB
+            inst_commit <= ~ex_stop;
             if (ext_sub[32] == ext_sub[31]) begin
                 result <= data_a - data_b;
                 bubble_cnt <= bubble_cnt_dec;
@@ -231,6 +239,7 @@ always @(*) begin
         
         6'b100011: if (jpc[10:6] != 5'b00000) `RI_EXC else begin
         // SUBU
+            inst_commit <= ~ex_stop;
             result <= data_a - data_b;
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -240,6 +249,7 @@ always @(*) begin
         
         6'b100100: if (jpc[10:6] != 5'b00000) `RI_EXC else begin
         // AND
+            inst_commit <= ~ex_stop;
             result <= data_a & data_b;
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -249,6 +259,7 @@ always @(*) begin
         
         6'b100101: if (jpc[10:6] != 5'b00000) `RI_EXC else begin
         // OR
+            inst_commit <= ~ex_stop;
             result <= data_a | data_b;
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -258,6 +269,7 @@ always @(*) begin
         
         6'b100110: if (jpc[10:6] != 5'b00000) `RI_EXC else begin
         // XOR
+            inst_commit <= ~ex_stop;
             result <= data_a ^ data_b;
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -267,6 +279,7 @@ always @(*) begin
         
         6'b100111: if (jpc[10:6] != 5'b00000) `RI_EXC else begin
         // NOR
+            inst_commit <= ~ex_stop;
             result <= ~(data_a | data_b);
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -276,6 +289,7 @@ always @(*) begin
         
         6'b000000: if (jpc[25:21] != 5'b00000) `RI_EXC else begin
         // SLL
+            inst_commit <= ~ex_stop;
             result <= data_b << zimm[10:6];
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -285,6 +299,7 @@ always @(*) begin
 
         6'b000100: if (jpc[10:6] != 5'b00000) `RI_EXC else begin
         // SLLV
+            inst_commit <= ~ex_stop;
             result <= data_b << data_a[4:0];
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -294,6 +309,7 @@ always @(*) begin
         
         6'b000010: if (jpc[25:21] != 5'b00000) `RI_EXC else begin
         // SRL
+            inst_commit <= ~ex_stop;
             result <= data_b >> zimm[10:6];
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -303,6 +319,7 @@ always @(*) begin
         
         6'b000110: if (jpc[10:6] != 5'b00000) `RI_EXC else begin
         // SRLV
+            inst_commit <= ~ex_stop;
             result <= data_b >> data_a[4:0];
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -312,6 +329,7 @@ always @(*) begin
         
         6'b000011: if (jpc[25:21] != 5'b00000) `RI_EXC else begin
         // SRA
+            inst_commit <= ~ex_stop;
             result <= ($signed(data_b)) >>> zimm[10:6];
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -321,6 +339,7 @@ always @(*) begin
         
         6'b000111: if (jpc[10:6] != 5'b00000) `RI_EXC else begin
         // SRAV
+            inst_commit <= ~ex_stop;
             result <= ($signed(data_b)) >>> data_a[4:0];
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -330,6 +349,7 @@ always @(*) begin
         
         6'b101010: if (jpc[10:6] != 5'b00000) `RI_EXC else begin
         // SLT
+            inst_commit <= ~ex_stop;
             result <= ($signed(data_a) < $signed(data_b));
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -339,6 +359,7 @@ always @(*) begin
         
         6'b101011: if (jpc[10:6] != 5'b00000) `RI_EXC else begin
         // SLTU
+            inst_commit <= ~ex_stop;
             result <= data_a < data_b ? 32'h00000001 : 32'h00000000;
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -348,6 +369,7 @@ always @(*) begin
         
         6'b001000: if (jpc[20:11] != 10'b0000000000) `RI_EXC else begin
         // JR
+            inst_commit <= ~ex_stop;
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stop ? ex_stopcnt_dec : 3'b010;
             pc_jumpto <= data_a;
@@ -357,6 +379,7 @@ always @(*) begin
         
         6'b001001: if (jpc[20:16] != 5'b00000) `RI_EXC else begin
         // JALR
+            inst_commit <= ~ex_stop;
             result <= npc + 32'd4;
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stop ? ex_stopcnt_dec : 3'b010;
@@ -367,6 +390,7 @@ always @(*) begin
         
         6'b010000: if (jpc[10:6] != 5'b00000 || jpc[25:16] != 10'b0000000000) `RI_EXC else begin
         // MFHI
+            inst_commit <= ~ex_stop;
             result <= hi;
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -376,6 +400,7 @@ always @(*) begin
         
         6'b010010: if (jpc[10:6] != 5'b00000 || jpc[25:16] != 10'b0000000000) `RI_EXC else begin
         // MFLO
+            inst_commit <= ~ex_stop;
             result <= lo;
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -385,6 +410,7 @@ always @(*) begin
         
         6'b010011, 6'b010001: if (jpc[20:6] != 15'b00000000000000) `RI_EXC else begin
         // MTLO, MTHI
+            inst_commit <= ~ex_stop;
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
             if_forward_reg_write <= 1'b0;
@@ -393,6 +419,7 @@ always @(*) begin
         
         6'b001100: begin
         // SYSCALL
+            inst_commit <= ~ex_stop;
             ex_cause <= ~ex_stop ? 5'd8 : 5'd0;
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stop ? ex_stopcnt_dec : 3'b010;
@@ -404,6 +431,7 @@ always @(*) begin
         
         6'b001101: begin
         // BREAK
+            inst_commit <= ~ex_stop;
             ex_cause <= ~ex_stop ? 5'd9 : 5'd0;
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stop ? ex_stopcnt_dec : 3'b010;
@@ -415,6 +443,7 @@ always @(*) begin
         
         6'b001010: if (jpc[10:6] != 5'b00000) `RI_EXC else begin
         // MOVZ
+            inst_commit <= ~ex_stop;
             result <= data_a;
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -425,6 +454,7 @@ always @(*) begin
         6'b011001: if (jpc[15:6] != 10'b0000000000) `RI_EXC else begin
             // MULTU
             // data_a * data_b
+            inst_commit <= ~ex_stop;
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
             if_forward_reg_write <= 1'b0;
@@ -434,6 +464,7 @@ always @(*) begin
         6'b011000: if (jpc[15:6] != 10'b0000000000) `RI_EXC else begin
             // MULT
             // data_a * data_b
+            inst_commit <= ~ex_stop;
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
             if_forward_reg_write <= 1'b0;
@@ -449,6 +480,7 @@ always @(*) begin
         case (func)
         6'b100000: if (jpc[10:6] != 5'b00000) `RI_EXC else begin
         // CLZ
+            inst_commit <= ~ex_stop;
             result <= ((data_a[31:16] == 16'h0000)
                 ? (5'd16 + ((data_a[15:8] == 8'h00)
                     ? (4'd8 + (data_a[7:4] == 4'h0)
@@ -472,6 +504,7 @@ always @(*) begin
         
         6'b100001: if (jpc[10:6] != 5'b00000) `RI_EXC else begin
         // CLO
+            inst_commit <= ~ex_stop;
             result <= ((data_a[31:16] == 16'hFFFF)
                 ? (5'd16 + ((data_a[15:8] == 8'hFF)
                     ? (4'd8 + (data_a[7:4] == 4'hF)
@@ -499,6 +532,7 @@ always @(*) begin
     
     6'b010000: begin
         // COP0
+        inst_commit <= ~ex_stop;
         case (jpc[25:21])
         5'b00100: if (jpc[10:3] != 8'b00000000) `RI_EXC else begin
             //MTC0
@@ -576,6 +610,7 @@ always @(*) begin
     
     6'b001000: begin
         // ADDI
+        inst_commit <= ~ex_stop;
         if (ext_addsimm[32] == ext_addsimm[31]) begin
             bubble_cnt <= bubble_cnt_dec;
             ex_stopcnt <= ex_stopcnt_dec;
@@ -597,6 +632,7 @@ always @(*) begin
     
     6'b001001: begin
         // ADDIU
+        inst_commit <= ~ex_stop;
         bubble_cnt <= bubble_cnt_dec;
         ex_stopcnt <= ex_stopcnt_dec;
         if_pc_jump <= 1'b0;
@@ -606,6 +642,7 @@ always @(*) begin
     
     6'b001100: begin
         // ANDI
+        inst_commit <= ~ex_stop;
         bubble_cnt <= bubble_cnt_dec;
         ex_stopcnt <= ex_stopcnt_dec;
         if_pc_jump <= 1'b0;
@@ -615,6 +652,7 @@ always @(*) begin
     
     6'b001101: begin
         // ORI
+        inst_commit <= ~ex_stop;
         bubble_cnt <= bubble_cnt_dec;
         ex_stopcnt <= ex_stopcnt_dec;
         if_pc_jump <= 1'b0;
@@ -624,6 +662,7 @@ always @(*) begin
     
     6'b001110: begin
         // XORI
+        inst_commit <= ~ex_stop;
         bubble_cnt <= bubble_cnt_dec;
         ex_stopcnt <= ex_stopcnt_dec;
         if_pc_jump <= 1'b0;
@@ -633,6 +672,7 @@ always @(*) begin
     
     6'b001010: begin
         // SLTI
+        inst_commit <= ~ex_stop;
         bubble_cnt <= bubble_cnt_dec;
         ex_stopcnt <= ex_stopcnt_dec;
         if_pc_jump <= 1'b0;
@@ -642,6 +682,7 @@ always @(*) begin
     
     6'b001011: begin
         // SLTIU
+        inst_commit <= ~ex_stop;
         bubble_cnt <= bubble_cnt_dec;
         ex_stopcnt <= ex_stopcnt_dec;
         if_pc_jump <= 1'b0;
@@ -651,6 +692,7 @@ always @(*) begin
     
     6'b001111: if (jpc[25:21] != 5'b00000) `RI_EXC else begin
         // LUI
+        inst_commit <= ~ex_stop;
         bubble_cnt <= bubble_cnt_dec;
         ex_stopcnt <= ex_stopcnt_dec;
         if_pc_jump <= 1'b0;
@@ -660,6 +702,7 @@ always @(*) begin
     
     6'b000010: begin
         // J
+        inst_commit <= ~ex_stop;
         bubble_cnt <= bubble_cnt_dec;
         ex_stopcnt <= ex_stop ? ex_stopcnt_dec : 3'b010;
         if_pc_jump <= ~ex_stop;
@@ -669,6 +712,7 @@ always @(*) begin
     
     6'b000011: begin
         // JAL
+        inst_commit <= ~ex_stop;
         result <= npc + 32'd4;
         bubble_cnt <= bubble_cnt_dec;
         ex_stopcnt <= ex_stop ? ex_stopcnt_dec : 3'b010;
@@ -679,6 +723,7 @@ always @(*) begin
             
     6'b000100: begin
         // BEQ
+        inst_commit <= ~ex_stop;
         bubble_cnt <= bubble_cnt_dec;
         pc_jumpto <= npc + {simm[29:0], 2'b00};
         if_forward_reg_write <= 1'b0;
@@ -696,6 +741,7 @@ always @(*) begin
     
     6'b000101: begin
         // BNE
+        inst_commit <= ~ex_stop;
         bubble_cnt <= bubble_cnt_dec;
         pc_jumpto <= npc + {simm[29:0], 2'b00};
         if_forward_reg_write <= 1'b0;
@@ -713,6 +759,7 @@ always @(*) begin
     
     6'b000111: if (jpc[20:16] != 5'b00000) `RI_EXC else begin
         // BGTZ
+        inst_commit <= ~ex_stop;
         bubble_cnt <= bubble_cnt_dec;
         pc_jumpto <= npc + {simm[29:0], 2'b00};
         if_forward_reg_write <= 1'b0;
@@ -730,6 +777,7 @@ always @(*) begin
     
     6'b000110: if (jpc[20:16] != 5'b00000) `RI_EXC else begin
         // BLEZ
+        inst_commit <= ~ex_stop;
         bubble_cnt <= bubble_cnt_dec;
         pc_jumpto <= npc + {simm[29:0], 2'b00};
         if_forward_reg_write <= 1'b0;
@@ -747,6 +795,7 @@ always @(*) begin
     
     6'b000001: begin
         // REGIMM
+        inst_commit <= ~ex_stop;
         bubble_cnt <= bubble_cnt_dec;
         pc_jumpto <= npc + {simm[29:0], 2'b00};
         result <= npc + 32'd4;
@@ -785,6 +834,7 @@ always @(*) begin
     
     6'b100011: begin
         // LW
+        inst_commit <= ~ex_stop;
         if (sl_addr[1:0] == 2'b00) begin
             result <= sl_addr;
             bubble_cnt <= ex_stop ? bubble_cnt_dec : 3'b001; // IF/ID/EX stop
@@ -807,6 +857,7 @@ always @(*) begin
     
     6'b100001, 6'b100101: begin
         // LH LHU
+        inst_commit <= ~ex_stop;
         if (sl_addr[0] == 1'b0) begin
             load_byte <= {op[2], sl_addr[1], sl_addr[1], ~sl_addr[1], ~sl_addr[1]};
             result <= sl_addr;
@@ -830,6 +881,7 @@ always @(*) begin
     
     6'b100000, 6'b100100: begin
         // LB LBU
+        inst_commit <= ~ex_stop;
         load_byte <= {op[2],
             sl_addr[1] & sl_addr[0], sl_addr[1] & ~sl_addr[0],
             ~sl_addr[1] & sl_addr[0], ~sl_addr[1] & ~sl_addr[0]};
@@ -842,6 +894,7 @@ always @(*) begin
     
     6'b101011: begin
         // SW
+        inst_commit <= ~ex_stop;
         if (sl_addr[1:0] == 2'b00) begin
             result <= sl_addr;
             mem_data <= data_b; // write mem
@@ -865,6 +918,7 @@ always @(*) begin
     
     6'b101001: begin
         // SH
+        inst_commit <= ~ex_stop;
         if (sl_addr[0] == 1'b0) begin
             load_byte <= {1'b0, sl_addr[1], sl_addr[1], ~sl_addr[1], ~sl_addr[1]};
             result <= sl_addr;
@@ -889,6 +943,7 @@ always @(*) begin
     
     6'b101000: begin
         // SB
+        inst_commit <= ~ex_stop;
         load_byte <= {1'b0,
             sl_addr[1] & sl_addr[0], sl_addr[1] & ~sl_addr[0],
             ~sl_addr[1] & sl_addr[0], ~sl_addr[1] & ~sl_addr[0]};
@@ -1018,7 +1073,7 @@ always@(posedge clk or negedge rst) begin
                 timer_int <= (data_b >= cp0[COMPARE]);
             end
             else begin
-                if (cp0[COUNT] < cp0[COMPARE]) begin
+                if (cp0[COUNT] != cp0[COMPARE]) begin
                     timer_int <= 1'b0;
                     cp0[COUNT] <= cp0[COUNT] + 1;
                 end

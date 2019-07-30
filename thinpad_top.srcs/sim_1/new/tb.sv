@@ -42,7 +42,7 @@ wire flash_byte_n;       //Flash 8bit模式选择，低有效。在使用flash的16位模式时请
 //Windows需要注意路径分隔符的转义，例如"D:\\foo\\bar.bin"
 parameter BASE_RAM_INIT_FILE = "C:\\Users\\a710128\\Desktop\\cpu\\nw\\thinpad_top.srcs\\sim_1\\imports\\main.bin"; //BaseRAM初始化文件，请修改为实际的绝对路径
 parameter EXT_RAM_INIT_FILE = "/tmp/eram.bin";    //ExtRAM初始化文件，请修改为实际的绝对路径
-parameter FLASH_INIT_FILE = "C:\\Users\\a710128\\Desktop\\cpu\\kernel3.elf";    //Flash初始化文件，请修改为实际的绝对路径
+parameter FLASH_INIT_FILE = "C:\\Users\\a710128\\Desktop\\cpu\\cpu-testcase\\perf_test\\obj\\bitcount\\main.elf";    //Flash初始化文件，请修改为实际的绝对路径
 
 assign rxd = 1'b1; //idle state
 

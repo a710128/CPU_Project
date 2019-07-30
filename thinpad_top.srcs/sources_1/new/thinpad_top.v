@@ -272,6 +272,8 @@ wire[4:0] tlb_query_idx;
 wire[95:0] tlb_query_entry;
 wire[7:0] current_asid;
 
+wire    inst_commit;
+
 
 EX ex_instance(
     .clk(clk),
@@ -337,7 +339,9 @@ EX ex_instance(
     .tlbp_query(tlbp_query),
     .tlbr_query(tlbr_query),
     .tlb_query_idx(tlb_query_idx),
-    .tlb_query_entry(tlb_query_entry)
+    .tlb_query_entry(tlb_query_entry),
+    
+    .inst_commit(inst_commit)
 );
 
 // EX/MEM registers
@@ -499,7 +503,10 @@ MMU mmu_instance(
     .flash_ce_n(flash_ce_n),         //Flash片选信号，低有效
     .flash_oe_n(flash_oe_n),         //Flash读使能信号，低有效
     .flash_we_n(flash_we_n),         //Flash写使能信号，低有效
-    .flash_byte_n(flash_byte_n)       //Flash 8bit模式选择，低有效。在使用flash的16位模式时请设为1
+    .flash_byte_n(flash_byte_n),       //Flash 8bit模式选择，低有效。在使用flash的16位模式时请设为1
+    
+    
+    .inst_commit(inst_commit)
 );
 
 blk_mem_gen_0 onchiprom (

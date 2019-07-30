@@ -75,8 +75,52 @@ module MMU(
     output wire flash_ce_n,         //Flash片选信号，低有效
     output wire flash_oe_n,         //Flash读使能信号，低有效
     output wire flash_we_n,         //Flash写使能信号，低有效
-    output wire flash_byte_n      //Flash 8bit模式选择，低有效。在使用flash的16位模式时请设为1
+    output wire flash_byte_n,      //Flash 8bit模式选择，低有效。在使用flash的16位模式时请设为1
+    
+    input  wire inst_commit
     );
+
+/* ===================== Counter ==================== */
+parameter CPU_US_COUNT = 10;
+reg[63:0]       cycle_counter;
+wire[31:0]      cycle_counter_lo;
+wire[31:0]      cycle_counter_hi;
+assign cycle_counter_lo = cycle_counter[31:0];
+assign cycle_counter_hi = cycle_counter[63:32];
+reg[7:0]        cpu_ns_count;
+reg[63:0]       cpu_us_counter;
+wire[31:0]      us_counter_lo;
+wire[31:0]      us_counter_hi;
+assign us_counter_lo = cpu_us_counter[31:0];
+assign us_counter_hi = cpu_us_counter[63:32];
+reg[63:0]       inst_counter;
+wire[31:0]      inst_counter_lo;
+wire[31:0]      inst_counter_hi;
+assign inst_counter_lo = inst_counter[31:0];
+assign inst_counter_hi = inst_counter[63:32];
+always @(posedge clk) begin
+    if (!rst) begin
+        cpu_ns_count <= 8'b1;
+        cpu_us_counter <= 64'b0;
+        cycle_counter <= 64'b0;
+        inst_counter <= 64'b0;
+    end
+    else begin
+        cycle_counter <= cycle_counter + 64'b1;
+        if (inst_commit) begin
+            inst_counter <= inst_counter + 64'b1;
+        end
+        if (cpu_ns_count == CPU_US_COUNT) begin
+            cpu_ns_count <= 8'b1;
+            cpu_us_counter <= cpu_us_counter + 64'b1;
+        end
+        else begin
+            cpu_ns_count <= cpu_ns_count + 8'b1;
+        end
+    end
+    
+end
+
 
 reg tlb_enabled;
 wire[25:0] tlb_paddr;
@@ -219,6 +263,24 @@ always @(*) begin
                 if (if_read) begin
                     output_data <= {30'b0, uart_dataready, uart_tbre & uart_tsre};
                 end
+            end
+            16'h0500: begin // cycle lo
+                output_data <= cycle_counter_lo;
+            end
+            16'h0504: begin // cycle hi
+                output_data <= cycle_counter_hi;
+            end
+            16'h0600: begin // us lo
+                output_data <= us_counter_lo;
+            end
+            16'h0604: begin // us hi
+                output_data <= us_counter_hi;
+            end
+            16'h0700: begin // inst lo
+                output_data <= inst_counter_lo;
+            end
+            16'h0704: begin // inst hi
+                output_data <= inst_counter_hi;
             end
             endcase
         end
