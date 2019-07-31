@@ -348,6 +348,7 @@ wire[31:0]  commit_bp_res;
 
 reg         ds_pc;          // 在提交延迟槽时修改PC
 reg[31:0]   ds_pc_addr;
+wire[31:0]  mem_BVA;
 
 rob_commit rob_commit_inst(
     // BASE
@@ -377,7 +378,7 @@ rob_commit rob_commit_inst(
     .result_avail( commit_buffer_reg ? regheap_avail[commit_buffer_reg_id] : 1'b1),           // 是否已经计算出结果
     .ri_val( commit_buffer_ri ? regheap_val[commit_buffer_ri_id] : 32'b0 ),
     .rj_val( commit_buffer_rj ? regheap_val[commit_buffer_rj_id] : 32'b0 ),        
-    .i_status( buffer_commit ? 4'd0 : commit_buffer_status ),               // 状态
+    .i_status_0( buffer_commit ? 4'd0 : commit_buffer_status ),               // 状态
     .o_status( commit_buffer_status ),
     
     .intq((cp0_SR[1] == 0) && ((hardint & cp0_SR[15:10]) != 6'b000000) && (cp0_SR[0] == 1) ),                   // 是否有外部中断 (  !SR_exl && (intreq & SR_im != 0) && SR_ie  )
@@ -402,6 +403,7 @@ rob_commit rob_commit_inst(
     .mem_avail( mem_avail ),              // 操作完成
     .mem_tlbmiss( mem_tlbmiss ),            // TLB Miss
     .mem_modify_ex( mem_modify_ex ),
+    .mem_BVA(mem_BVA),
     
     // HI LO
     .reg_hi(upd_hi ? upd_hi_val : reg_HI),
@@ -430,7 +432,7 @@ rob_commit rob_commit_inst(
 assign cp0_exception = commit_buffer_tlb_exception | commit_buffer_normal_exception;
 assign cp0_excode = rob_inps[0][37:33];
 assign cp0_exc_pc = rob_inps[0][107:76];
-assign cp0_mem_vaddr = (rob_inps[0][32:30] == 3'b0) ? rob_inps[0][107:76] :  mem_vaddr;
+assign cp0_mem_vaddr = (rob_inps[0][32:30] == 3'b0) ? rob_inps[0][107:76] :  mem_BVA;
 assign cp0_exc_ds = rob_inps[0][140];
 
 assign feed_bp = commit_feed_bp;

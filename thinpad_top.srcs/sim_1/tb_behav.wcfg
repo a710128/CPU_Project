@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="83547500400000fs"></ZoomStartTime>
-      <ZoomEndTime time="83547887200001fs"></ZoomEndTime>
-      <Cursor1Time time="83547758600000fs"></Cursor1Time>
+      <ZoomStartTime time="4081300000fs"></ZoomStartTime>
+      <ZoomEndTime time="13771300001fs"></ZoomEndTime>
+      <Cursor1Time time="11921300000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="222"></NameColumnWidth>
-      <ValueColumnWidth column_width="78"></ValueColumnWidth>
+      <ValueColumnWidth column_width="74"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="90" />
+   <WVObjectSize size="91" />
    <wave_markers>
       <marker time="28450315441000" label="" />
       <marker time="12200800000" label="" />
@@ -296,6 +296,10 @@
    <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/excode" type="array">
       <obj_property name="ElementShortName">excode[4:0]</obj_property>
       <obj_property name="ObjectShortName">excode[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/mem_ce" type="logic">
+      <obj_property name="ElementShortName">mem_ce</obj_property>
+      <obj_property name="ObjectShortName">mem_ce</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/mem_inst/mem_we" type="logic">
       <obj_property name="ElementShortName">mem_we</obj_property>

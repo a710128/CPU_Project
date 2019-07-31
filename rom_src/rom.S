@@ -64,9 +64,6 @@ load_elf:
 
   #e_entry
   LOAD_WORD_I($s3, 24)
-  
-  li $t3, 0x8002a14c
-  li $t4, 0xBFD00400
 
 next_sec:
   #s1, addr proghdr

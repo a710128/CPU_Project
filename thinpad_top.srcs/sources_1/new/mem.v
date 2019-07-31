@@ -425,7 +425,7 @@ always @(*) begin
             end
         end
         else if (mem_addr[31:24] == 8'h1E) begin    // FLASH
-            i_cnt_req <= 4;
+            i_cnt_req <= 3;
             
             i_flash_ce_n <= 0;
             i_flash_a <= mem_addr[23:1];
