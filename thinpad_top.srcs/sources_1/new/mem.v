@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module mem(
+module mem #(CPU_FREQ = 50) (
     input wire          clk,
     input wire          period0,
     input wire          rst,
@@ -126,7 +126,7 @@ assign dm9k_cs_n = 1;
 assign dm9k_pwrst_n = 1;
 
 /* ===================== Counter ==================== */
-parameter CPU_US_COUNT = 30;
+localparam CPU_US_COUNT = CPU_FREQ;
 reg[63:0]       cycle_counter;
 wire[31:0]      cycle_counter_lo;
 wire[31:0]      cycle_counter_hi;
@@ -351,6 +351,7 @@ always @(*) begin
     i_rom_ce <= 0;
     i_rom_addr <= 0; 
     
+    i_leds <= o_leds;
     
     if (mem_ce) begin
         i_mem_req <= 1;

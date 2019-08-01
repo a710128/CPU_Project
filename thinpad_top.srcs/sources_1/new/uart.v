@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module uart(
+module uart # ( parameter CPU_FREQ = 50) (
     input wire          clk_100M,           //50MHz 时钟输入
     input wire          rst,
     
@@ -36,8 +36,6 @@ module uart(
     input  wire[7:0]    uart_data_out,
     output wire         uart_busy
 );
-
-parameter CLK_FREQ = 60000000;
     
 //直连串口接收发送演示，从直连串口收到的数据再发送出去
 wire [7:0] ext_uart_rx;
@@ -47,6 +45,8 @@ reg ext_uart_start, ex_uart_clear;
 reg [7:0]   uart_read_buffer;
 reg         read_buffer_ready;
 assign uart_data_ready = read_buffer_ready;
+
+localparam CLK_FREQ = CPU_FREQ * 1000000;
 
 async_receiver #(.ClkFrequency(CLK_FREQ),.Baud(115200)) //接收模块，9600无检验位
     ext_uart_r(

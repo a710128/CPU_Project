@@ -121,7 +121,7 @@ generate
     genvar i;
     for (i = 0; i < 64; i = i + 1)
     begin:REG_HEAP_GEN
-        if (i < 44) begin
+        if (i < 41) begin
         regheap_entry regheap_entry_inst (
             .clk(clk),
             .rst(rst),

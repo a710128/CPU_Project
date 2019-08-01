@@ -91,6 +91,7 @@ assign video_clk = 0;
 assign video_de = 0;
 
 
+parameter       CPU_FREQ = 70;  
 
 wire    clear;
 wire    clk_100M;
@@ -148,7 +149,7 @@ wire    uart_data_read, uart_data_write;
 wire    uart_data_ready, uart_busy;
 wire[7:0]   uart_data_in,   uart_data_out;
 
-uart uart_inst (
+uart #(CPU_FREQ) uart_inst (
     .clk_100M(clk_100M),
     .rst(rst),
     .txd(txd),
@@ -251,7 +252,7 @@ wire[31:0]  mem_data_read;
 wire        buffer_shift;
 
 
-mem mem_inst (
+mem #(CPU_FREQ) mem_inst (
     .clk(clk_100M),
     .period0(period0),
     .rst(rst),
