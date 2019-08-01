@@ -22,6 +22,7 @@
 
 module decoder(
     input wire          clk,
+    input wire          period0,
     input wire          rst,
     input wire          clear,              // 清空流水线以及当前指令
     
@@ -237,6 +238,8 @@ convt64to6 convt64to6_unused_reg (
 );
 
 reg last_branch;
+reg last_cant_issue;
+
 always @(posedge clk) begin
     if (rst) begin
         reg_commit[0] <= 0;
@@ -306,6 +309,7 @@ always @(posedge clk) begin
         reg_active[31] <= 31;
         
         last_branch <= 0;
+        last_cant_issue <= 0;
     end
     else if (clear) begin
         reg_active[0] <= reg_commit[0];
@@ -341,6 +345,7 @@ always @(posedge clk) begin
         reg_active[30] <= reg_commit[30];
         reg_active[31] <= reg_commit[31];
         last_branch <= 0;
+        last_cant_issue <= 0;
         
         if (commit) begin // commit 同时 clear
             reg_commit[commit_reg] <= commit_regheap;
@@ -360,6 +365,8 @@ always @(posedge clk) begin
         if (assign_reg) begin
             reg_active[issue_reg] <=  assign_reg_id;
         end
+        
+        last_cant_issue <= cant_issue;
     end
     
     
@@ -387,8 +394,9 @@ always @(*) begin
     issue_j <= 0;
     issue_delay_slot <= 0;
     
-    if (rst || clear) begin
+    if (rst || clear || !period0) begin
         // 如果 rst 或者 clear 则不进行操作
+        cant_issue <= last_cant_issue;
     end
     else if (noinst) begin       // 没有指令
         cant_issue <= 0;    // 可以发射

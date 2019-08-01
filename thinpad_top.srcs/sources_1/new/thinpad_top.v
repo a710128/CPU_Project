@@ -111,14 +111,26 @@ reg     rst = 1;
 
 
 /* ================ rst =================== */
-always @(posedge clk_50M) begin
-    if (reset_btn || !locked) begin
-        rst <= 1;
+reg     period0 = 1'b0;
+always @(posedge clk_100M) begin
+    period0 <= ~period0;
+end
+
+always @(posedge clk_100M) begin
+    if (!period0) begin
+        if (reset_btn || !locked) begin
+            rst <= 1;
+        end
+        else begin
+            rst <= 0;
+        end
     end
     else begin
-        rst <= 0;
+        rst <= rst;
     end
 end
+
+
 
 /* ================= on-chip ROM ================*/
 wire        rom_ce;
@@ -137,7 +149,7 @@ wire    uart_data_ready, uart_busy;
 wire[7:0]   uart_data_in,   uart_data_out;
 
 uart uart_inst (
-    .clk_50M(clk_50M),
+    .clk_100M(clk_100M),
     .rst(rst),
     .txd(txd),
     .rxd(rxd),
@@ -191,7 +203,7 @@ assign mem_noexc = (mem_exception == 2'd0) ? 1'b1 : 1'b0;
 
 
 mmu mmu_inst(
-    .clk(clk_50M),
+    .clk(clk_100M),
     .rst(rst),
     
     // Global
@@ -240,7 +252,8 @@ wire        buffer_shift;
 
 
 mem mem_inst (
-    .clk_50M(clk_50M),
+    .clk(clk_100M),
+    .period0(period0),
     .rst(rst),
 
     // Interface
@@ -340,14 +353,21 @@ reg         i_if_id_rst;
 assign i_if_id_noinst = if_skip | i_if_id_rst;
 
 
-always @(posedge clk_50M) begin
-    i_if_id_tlbmiss <= next_PC_tlbmiss;
-    i_if_id_pc <= next_PC_vaddr;
-    if (rst) begin
-        i_if_id_rst <= 1;
+always @(posedge clk_100M) begin
+    if (!period0) begin
+        i_if_id_tlbmiss <= next_PC_tlbmiss;
+        i_if_id_pc <= next_PC_vaddr;
+        if (rst) begin
+            i_if_id_rst <= 1;
+        end
+        else begin
+            i_if_id_rst <= 0;
+        end
     end
     else begin
-        i_if_id_rst <= 0;
+        i_if_id_tlbmiss <= i_if_id_tlbmiss;
+        i_if_id_pc <= i_if_id_pc;
+        i_if_id_rst <= i_if_id_rst;
     end
 end
 
@@ -366,20 +386,29 @@ wire[31:0]  pc_jump_addr;            // 回传实际跳转地址
 
 wire        cant_issue;         // 资源不足无法发射
 
-always @(posedge clk_50M) begin
-    if (rst || clear) begin
-        o_if_id_tlbmiss <= 0;
-        o_if_id_pc <= 0;
-        o_if_id_inst <= 0;
-        o_if_id_noinst <= 1;
-        o_if_id_ifskip <= 0;
+always @(posedge clk_100M) begin
+    if (!period0) begin
+        if (rst || clear) begin
+            o_if_id_tlbmiss <= 0;
+            o_if_id_pc <= 0;
+            o_if_id_inst <= 0;
+            o_if_id_noinst <= 1;
+            o_if_id_ifskip <= 0;
+        end
+        else if (!cant_issue) begin
+            o_if_id_tlbmiss <= i_if_id_tlbmiss;
+            o_if_id_pc <= i_if_id_pc;
+            o_if_id_inst <= if_data;
+            o_if_id_noinst <= i_if_id_noinst;
+            o_if_id_ifskip <= if_skip;
+        end
     end
-    else if (!cant_issue) begin
-        o_if_id_tlbmiss <= i_if_id_tlbmiss;
-        o_if_id_pc <= i_if_id_pc;
-        o_if_id_inst <= if_data;
-        o_if_id_noinst <= i_if_id_noinst;
-        o_if_id_ifskip <= if_skip;
+    else begin
+        o_if_id_tlbmiss <= o_if_id_tlbmiss;
+        o_if_id_pc <= o_if_id_pc;
+        o_if_id_inst <= o_if_id_inst;
+        o_if_id_noinst <= o_if_id_noinst;
+        o_if_id_ifskip <= o_if_id_ifskip;
     end
 end
 
@@ -400,7 +429,8 @@ wire[31:0]  issue_meta, issue_pc, issue_j;
 
 
 decoder decoder_inst(
-    .clk(clk_50M),
+    .clk(clk_100M),
+    .period0(period0),
     .rst(rst),
     .clear(clear),              // 清空流水线以及当前指令
     
@@ -467,7 +497,8 @@ wire        feed_bp;
 wire[31:0]  feed_bp_pc, feed_bp_res;
 
 exe_top exec_inst(
-    .clk(clk_50M),
+    .clk(clk_100M),
+    .period0(period0),
     .rst(rst),
     
     .issue(issue),
@@ -528,7 +559,7 @@ assign hardint = ip_7_2;
 
 
 cp0 cp0_instance (
-    .clk(clk_50M),
+    .clk(clk_100M),
     .rst(rst),
     
     .cp0_entryhi(cp0_ENTRYHI),
@@ -576,7 +607,8 @@ assign pc_mux0 = (if_skip || cant_issue) ? i_if_id_pc : pred_pc;
 assign next_PC_vaddr = pc_jump ? pc_jump_addr : pc_mux0;
 
 branch_predictor branch_predictor_inst(
-    .clk(clk_50M),
+    .clk(clk_100M),
+    .period0(period0),
     .rst(rst),
     .clear(clear),
     

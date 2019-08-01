@@ -11,29 +11,26 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="4081300000fs"></ZoomStartTime>
-      <ZoomEndTime time="13771300001fs"></ZoomEndTime>
-      <Cursor1Time time="11921300000fs"></Cursor1Time>
+      <ZoomStartTime time="5186683333333fs"></ZoomStartTime>
+      <ZoomEndTime time="6157683333334fs"></ZoomEndTime>
+      <Cursor1Time time="5995850000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="222"></NameColumnWidth>
-      <ValueColumnWidth column_width="74"></ValueColumnWidth>
+      <ValueColumnWidth column_width="70"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="91" />
-   <wave_markers>
-      <marker time="28450315441000" label="" />
-      <marker time="12200800000" label="" />
-      <marker time="28452704574000" label="" />
-      <marker time="83546350000000" label="" />
-      <marker time="83547746600000" label="" />
-   </wave_markers>
+   <WVObjectSize size="100" />
    <wvobject fp_name="/tb/clk_50M" type="logic">
       <obj_property name="ElementShortName">clk_50M</obj_property>
       <obj_property name="ObjectShortName">clk_50M</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/clk_11M0592" type="logic">
-      <obj_property name="ElementShortName">clk_11M0592</obj_property>
-      <obj_property name="ObjectShortName">clk_11M0592</obj_property>
+   <wvobject fp_name="/tb/dut/period0" type="logic">
+      <obj_property name="ElementShortName">period0</obj_property>
+      <obj_property name="ObjectShortName">period0</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/clk_100M" type="logic">
+      <obj_property name="ElementShortName">clk_100M</obj_property>
+      <obj_property name="ObjectShortName">clk_100M</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/clock_btn" type="logic">
       <obj_property name="ElementShortName">clock_btn</obj_property>
@@ -329,6 +326,30 @@
       <obj_property name="ElementShortName">mem_data[31:0]</obj_property>
       <obj_property name="ObjectShortName">mem_data[31:0]</obj_property>
    </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/ri" type="logic">
+      <obj_property name="ElementShortName">ri</obj_property>
+      <obj_property name="ObjectShortName">ri</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/ri_id" type="array">
+      <obj_property name="ElementShortName">ri_id[5:0]</obj_property>
+      <obj_property name="ObjectShortName">ri_id[5:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/ri_val" type="array">
+      <obj_property name="ElementShortName">ri_val[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ri_val[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/rj" type="logic">
+      <obj_property name="ElementShortName">rj</obj_property>
+      <obj_property name="ObjectShortName">rj</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/rj_id" type="array">
+      <obj_property name="ElementShortName">rj_id[5:0]</obj_property>
+      <obj_property name="ObjectShortName">rj_id[5:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/rj_val" type="array">
+      <obj_property name="ElementShortName">rj_val[31:0]</obj_property>
+      <obj_property name="ObjectShortName">rj_val[31:0]</obj_property>
+   </wvobject>
    <wvobject fp_name="/tb/dut/exec_inst/rob_commit_inst/pc" type="array">
       <obj_property name="ElementShortName">pc[31:0]</obj_property>
       <obj_property name="ObjectShortName">pc[31:0]</obj_property>
@@ -369,28 +390,36 @@
       <obj_property name="ElementShortName">status[3:0]</obj_property>
       <obj_property name="ObjectShortName">status[3:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/cp0_instance/cp0_ce" type="logic">
-      <obj_property name="ElementShortName">cp0_ce</obj_property>
-      <obj_property name="ObjectShortName">cp0_ce</obj_property>
+   <wvobject fp_name="/tb/dut/exec_inst/muldiv_inst/ri_val" type="array">
+      <obj_property name="ElementShortName">ri_val[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ri_val[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/cp0_instance/cp0_inst" type="array">
-      <obj_property name="ElementShortName">cp0_inst[2:0]</obj_property>
-      <obj_property name="ObjectShortName">cp0_inst[2:0]</obj_property>
+   <wvobject fp_name="/tb/dut/exec_inst/muldiv_inst/ri_avail" type="logic">
+      <obj_property name="ElementShortName">ri_avail</obj_property>
+      <obj_property name="ObjectShortName">ri_avail</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/cp0_instance/cp0_reg" type="array">
-      <obj_property name="ElementShortName">cp0_reg[4:0]</obj_property>
-      <obj_property name="ObjectShortName">cp0_reg[4:0]</obj_property>
+   <wvobject fp_name="/tb/dut/exec_inst/muldiv_inst/rj_val" type="array">
+      <obj_property name="ElementShortName">rj_val[31:0]</obj_property>
+      <obj_property name="ObjectShortName">rj_val[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/cp0_instance/cp0_putval" type="array">
-      <obj_property name="ElementShortName">cp0_putval[31:0]</obj_property>
-      <obj_property name="ObjectShortName">cp0_putval[31:0]</obj_property>
+   <wvobject fp_name="/tb/dut/exec_inst/muldiv_inst/rj_avail" type="logic">
+      <obj_property name="ElementShortName">rj_avail</obj_property>
+      <obj_property name="ObjectShortName">rj_avail</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/cp0_instance/cp0_result" type="array">
-      <obj_property name="ElementShortName">cp0_result[31:0]</obj_property>
-      <obj_property name="ObjectShortName">cp0_result[31:0]</obj_property>
+   <wvobject fp_name="/tb/dut/exec_inst/muldiv_inst/div_result" type="array">
+      <obj_property name="ElementShortName">div_result[3:2][63:0]</obj_property>
+      <obj_property name="ObjectShortName">div_result[3:2][63:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/cp0_instance/cp0_regs" type="array">
-      <obj_property name="ElementShortName">cp0_regs[31:0][31:0]</obj_property>
-      <obj_property name="ObjectShortName">cp0_regs[31:0][31:0]</obj_property>
+   <wvobject fp_name="/tb/dut/exec_inst/muldiv_inst/divvalid" type="array">
+      <obj_property name="ElementShortName">divvalid[3:2]</obj_property>
+      <obj_property name="ObjectShortName">divvalid[3:2]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/reg_LO" type="array">
+      <obj_property name="ElementShortName">reg_LO[31:0]</obj_property>
+      <obj_property name="ObjectShortName">reg_LO[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/exec_inst/reg_HI" type="array">
+      <obj_property name="ElementShortName">reg_HI[31:0]</obj_property>
+      <obj_property name="ObjectShortName">reg_HI[31:0]</obj_property>
    </wvobject>
 </wave_config>

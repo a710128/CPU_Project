@@ -22,6 +22,7 @@
 
 module exe_top(
     input wire          clk,
+    input wire          period0,
     input wire          rst,
     
     input wire          issue,
@@ -120,6 +121,7 @@ generate
     genvar i;
     for (i = 0; i < 64; i = i + 1)
     begin:REG_HEAP_GEN
+        if (i < 44) begin
         regheap_entry regheap_entry_inst (
             .clk(clk),
             .rst(rst),
@@ -146,6 +148,13 @@ generate
             .commit_regid(commit_reg),
             .commit_regheap(commit_regheap)
         );
+    end
+    else begin
+        assign regheap_comp_id[i] = 0;
+        assign regheap_used[i] = 1;
+        assign regheap_avail[i] = 0;
+        assign regheap_val[i] = 32'b0;
+    end
     end
 endgenerate
 
@@ -348,11 +357,11 @@ wire[31:0]  commit_bp_res;
 
 reg         ds_pc;          // 在提交延迟槽时修改PC
 reg[31:0]   ds_pc_addr;
-wire[31:0]  mem_BVA;
 
 rob_commit rob_commit_inst(
     // BASE
     .clk(clk),
+    .period0(period0),
     .rst(rst),
     .clear(clear),
     
@@ -378,7 +387,7 @@ rob_commit rob_commit_inst(
     .result_avail( commit_buffer_reg ? regheap_avail[commit_buffer_reg_id] : 1'b1),           // 是否已经计算出结果
     .ri_val( commit_buffer_ri ? regheap_val[commit_buffer_ri_id] : 32'b0 ),
     .rj_val( commit_buffer_rj ? regheap_val[commit_buffer_rj_id] : 32'b0 ),        
-    .i_status_0( buffer_commit ? 4'd0 : commit_buffer_status ),               // 状态
+    .i_status( buffer_commit ? 4'd0 : commit_buffer_status ),               // 状态
     .o_status( commit_buffer_status ),
     
     .intq((cp0_SR[1] == 0) && ((hardint & cp0_SR[15:10]) != 6'b000000) && (cp0_SR[0] == 1) ),                   // 是否有外部中断 (  !SR_exl && (intreq & SR_im != 0) && SR_ie  )
@@ -403,7 +412,6 @@ rob_commit rob_commit_inst(
     .mem_avail( mem_avail ),              // 操作完成
     .mem_tlbmiss( mem_tlbmiss ),            // TLB Miss
     .mem_modify_ex( mem_modify_ex ),
-    .mem_BVA(mem_BVA),
     
     // HI LO
     .reg_hi(upd_hi ? upd_hi_val : reg_HI),
@@ -432,7 +440,7 @@ rob_commit rob_commit_inst(
 assign cp0_exception = commit_buffer_tlb_exception | commit_buffer_normal_exception;
 assign cp0_excode = rob_inps[0][37:33];
 assign cp0_exc_pc = rob_inps[0][107:76];
-assign cp0_mem_vaddr = (rob_inps[0][32:30] == 3'b0) ? rob_inps[0][107:76] :  mem_BVA;
+assign cp0_mem_vaddr = (rob_inps[0][32:30] == 3'b0) ? rob_inps[0][107:76] :  mem_vaddr;
 assign cp0_exc_ds = rob_inps[0][140];
 
 assign feed_bp = commit_feed_bp;
@@ -441,8 +449,16 @@ assign feed_bp_pc = rob_inps[0][107:76];
 
 
 
+reg         delay_jump;
+reg[31:0]   delay_jump_addr;
+
 always @(*) begin
-    if (commit_buffer_tlb_exception) begin
+    if (delay_jump) begin   // 如果有前一段的延迟跳转则优先处理
+        clear <= 1;
+        pc_jump <= 1;
+        pc_jump_addr <= delay_jump_addr;
+    end
+    else if (commit_buffer_tlb_exception) begin
         clear <= 1;
         pc_jump <= 1;
         pc_jump_addr <= cp0_EBASE;
@@ -493,6 +509,37 @@ always @(posedge clk) begin
         ds_pc_addr <= commit_pc_addr;
     end
     else begin
+    end
+end
+
+always @(posedge clk) begin // 对在第一段进行提交的跳转进行延迟
+    if (period0) begin
+        if (commit_buffer_tlb_exception) begin
+            delay_jump <= 1;
+            delay_jump_addr <= cp0_EBASE;
+        end
+        else if (commit_buffer_normal_exception) begin
+            delay_jump <= 1;
+            delay_jump_addr <= cp0_EBASE + 32'h180;
+        end
+        else if (commit_pc_imm) begin
+            delay_jump <= 1;
+            delay_jump_addr <= commit_pc_addr;
+        end
+        else if (buffer_commit && rob_inps[0][140] && ds_pc) begin
+            delay_jump <= 1;
+            delay_jump_addr <= ds_pc_addr;
+        end
+        else if (commit_pc_ds) begin
+            delay_jump <= 0;
+        end
+        else begin
+            delay_jump <= 0;
+        end
+    end
+    else begin
+        delay_jump <= 0;
+        delay_jump_addr <= 0;
     end
 end
 

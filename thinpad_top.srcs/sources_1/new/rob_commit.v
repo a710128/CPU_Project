@@ -25,6 +25,7 @@ module rob_commit(
     input wire  clk,
     input wire  rst,
     input wire  clear,
+    input wire  period0,
     
     input wire          issue,
     
@@ -48,7 +49,7 @@ module rob_commit(
     input wire          result_avail,           // 是否已经计算出结果
     input wire[31:0]    ri_val,
     input wire[31:0]    rj_val,        
-    input wire[3:0]     i_status_0,               // 状态
+    input wire[3:0]     i_status,               // 状态
     output wire[3:0]    o_status,
     
     input wire          intq,                   // 是否有外部中断
@@ -72,7 +73,6 @@ module rob_commit(
     input wire          mem_avail,              // 操作完成
     input wire          mem_tlbmiss,            // TLB Miss
     input wire          mem_modify_ex,
-    output reg[31:0]    mem_BVA,
     
     // HI LO
     input wire[31:0]    reg_hi,
@@ -120,7 +120,7 @@ wire[5:0]       i_ri_id;
 wire            i_rj;
 wire[5:0]       i_rj_id;
 wire[2:0]       i_commit_op;
-wire[4:0]       i_excode_0;
+wire[4:0]       i_excode;
 wire[5:0]       i_uop;
 wire[31:0]      i_meta;
 wire[31:0]      i_pc;
@@ -138,15 +138,13 @@ assign i_ri_id = inp[22:17];
 assign i_rj = inp[23];
 assign i_rj_id = inp[29:24];
 assign i_commit_op = inp[32:30];
-assign i_excode_0 = inp[37:33];
+assign i_excode = inp[37:33];
 assign i_uop = inp[43:38];
 assign i_meta = inp[75:44];
 assign i_pc = inp[107:76];
 assign i_j = inp[139:108];
 assign i_ds = inp[140];
 assign i_used = inp[141];
-
-
 
 
 reg         result_reg;
@@ -171,95 +169,6 @@ wire[31:0]  sl_addr = $signed(ri_val) + i_meta;
 wire        is_kernel = (cp0_SR[1] || (cp0_SR[4:3] == 2'b00));
 //wire        commit_wb = (i_component == 0) && (!result_avail);  // 无关联计算元件且变量未完成
 
-wire  pre_mem_access = (!(rst || clear)) && (!issue) && i_used && (!i_component) && (i_status_0 == STATUS_WAIT) && (!intq) && (!i_excode_0) && (!( !is_kernel && (i_pc >= 32'h80000000))) && (i_commit_op == 3'd2);
-wire[2:0]   i_status = pre_mem_access ? STATUS_MEM0 : i_status_0;
-// assign      mem_vaddr = sl_addr;
-reg[4:0]        mem_excode;
-
-wire[4:0]       i_excode;
-assign i_excode = pre_mem_access ? mem_excode : i_excode_0;
-
-
-always @(*) begin
-    mem_ce <= 0;
-    mem_excode <= 0;
-    if (pre_mem_access) begin
-        mem_vaddr <= sl_addr;
-        case(i_uop)
-            6'd0: begin // SB
-                mem_ce <= 1;
-                mem_write <= 1; 
-                mem_bytemode <= {1'b0, sl_addr[1] & sl_addr[0], sl_addr[1] & ~sl_addr[0], ~sl_addr[1] & sl_addr[0], ~sl_addr[1] & ~sl_addr[0]};
-                mem_write_data <= rj_val;
-            end
-            6'd1: begin // SH
-                if (sl_addr[0] == 1'b0) begin
-                    mem_ce <= 1;
-                    mem_write <= 1; 
-                    mem_bytemode <= {1'b0, sl_addr[1], sl_addr[1], ~sl_addr[1], ~sl_addr[1]};
-                    mem_write_data <= rj_val;
-                end
-                else begin
-                    mem_excode <= 5'h05; // AdES
-                end
-            end
-            6'd2: begin // SW
-                if (sl_addr[1:0] == 2'b00) begin
-                    mem_ce <= 1;
-                    mem_write <= 1; 
-                    mem_bytemode <= 5'b01111;
-                    mem_write_data <= rj_val;
-                end
-                else begin
-                    mem_excode <= 5'h05; // AdES
-                end
-            end
-            6'd3: begin // LBU
-                mem_ce <= 1;
-                mem_write <= 0; 
-                mem_bytemode <= {1'b1, sl_addr[1] & sl_addr[0], sl_addr[1] & ~sl_addr[0], ~sl_addr[1] & sl_addr[0], ~sl_addr[1] & ~sl_addr[0]};
-            end
-            6'd4: begin // LB
-                mem_ce <= 1;
-                mem_write <= 0; 
-                mem_bytemode <= {1'b0, sl_addr[1] & sl_addr[0], sl_addr[1] & ~sl_addr[0], ~sl_addr[1] & sl_addr[0], ~sl_addr[1] & ~sl_addr[0]};
-            end
-            6'd5: begin // LHU
-                if (sl_addr[0] == 1'b0) begin
-                    mem_ce <= 1;
-                    mem_write <= 0; 
-                    mem_bytemode <= {1'b1, sl_addr[1], sl_addr[1], ~sl_addr[1], ~sl_addr[1]};
-                end
-                else begin
-                    mem_excode <= 5'h04; // AdEL
-                end
-            end
-            6'd6: begin // LH
-                if (sl_addr[0] == 1'b0) begin
-                    mem_ce <= 1;
-                    mem_write <= 0; 
-                    mem_bytemode <= {1'b0, sl_addr[1], sl_addr[1], ~sl_addr[1], ~sl_addr[1]};
-                end
-                else begin
-                    mem_excode <= 5'h04; // AdEL
-                end
-            end
-            6'd7: begin // LW
-                if (sl_addr[1:0] == 2'b00) begin
-                    mem_ce <= 1;
-                    mem_write <= 0;
-                    mem_bytemode <= 5'b01111;
-                end
-                else begin
-                    mem_excode <= 5'h04; // AdEL
-                end
-            end
-            default: ;
-        endcase
-    end
-end
-
-
 
 always @(posedge clk) begin
     commit <= 0;
@@ -269,7 +178,7 @@ always @(posedge clk) begin
     change_pc_imm <= 0;
     change_pc_ds <= 0;
     feed_to_bp <= 0;
-    // mem_ce <= 0;
+    mem_ce <= 0;
     upd_hi <= 0;
     upd_lo <= 0;
     force_upd <= 0;
@@ -395,12 +304,90 @@ always @(posedge clk) begin
                                         commit <= 0;     // 不提交
                                         excode <= 5'h04;      // AdEL
                                         normal_exc <= 1;
-                                        mem_BVA <= i_meta;
+                                        mem_vaddr <= i_meta;
                                     end
                                 end
                             end
                             3'd2: begin // MEM  （需要写回内存）
-                                // 不会到这
+                                // 不提交，进入内存处理阶段
+                                commit <= 0;
+                                
+                                if (period0) begin  // 等待第二阶段
+                                    status <= STATUS_MEM0;
+                                end
+                                
+                                mem_vaddr <= sl_addr;
+                                case(i_uop)
+                                    6'd0: begin // SB
+                                        mem_ce <= 1;
+                                        mem_write <= 1; 
+                                        mem_bytemode <= {1'b0, sl_addr[1] & sl_addr[0], sl_addr[1] & ~sl_addr[0], ~sl_addr[1] & sl_addr[0], ~sl_addr[1] & ~sl_addr[0]};
+                                        mem_write_data <= rj_val;
+                                    end
+                                    6'd1: begin // SH
+                                        if (sl_addr[0] == 1'b0) begin
+                                            mem_ce <= 1;
+                                            mem_write <= 1; 
+                                            mem_bytemode <= {1'b0, sl_addr[1], sl_addr[1], ~sl_addr[1], ~sl_addr[1]};
+                                            mem_write_data <= rj_val;
+                                        end
+                                        else begin
+                                            excode <= 5'h05; // AdES
+                                        end
+                                    end
+                                    6'd2: begin // SW
+                                        if (sl_addr[1:0] == 2'b00) begin
+                                            mem_ce <= 1;
+                                            mem_write <= 1; 
+                                            mem_bytemode <= 5'b01111;
+                                            mem_write_data <= rj_val;
+                                        end
+                                        else begin
+                                            excode <= 5'h05; // AdES
+                                        end
+                                    end
+                                    6'd3: begin // LBU
+                                        mem_ce <= 1;
+                                        mem_write <= 0; 
+                                        mem_bytemode <= {1'b1, sl_addr[1] & sl_addr[0], sl_addr[1] & ~sl_addr[0], ~sl_addr[1] & sl_addr[0], ~sl_addr[1] & ~sl_addr[0]};
+                                    end
+                                    6'd4: begin // LB
+                                        mem_ce <= 1;
+                                        mem_write <= 0; 
+                                        mem_bytemode <= {1'b0, sl_addr[1] & sl_addr[0], sl_addr[1] & ~sl_addr[0], ~sl_addr[1] & sl_addr[0], ~sl_addr[1] & ~sl_addr[0]};
+                                    end
+                                    6'd5: begin // LHU
+                                        if (sl_addr[0] == 1'b0) begin
+                                            mem_ce <= 1;
+                                            mem_write <= 0; 
+                                            mem_bytemode <= {1'b1, sl_addr[1], sl_addr[1], ~sl_addr[1], ~sl_addr[1]};
+                                        end
+                                        else begin
+                                            excode <= 5'h04; // AdEL
+                                        end
+                                    end
+                                    6'd6: begin // LH
+                                        if (sl_addr[0] == 1'b0) begin
+                                            mem_ce <= 1;
+                                            mem_write <= 0; 
+                                            mem_bytemode <= {1'b0, sl_addr[1], sl_addr[1], ~sl_addr[1], ~sl_addr[1]};
+                                        end
+                                        else begin
+                                            excode <= 5'h04; // AdEL
+                                        end
+                                    end
+                                    6'd7: begin // LW
+                                        if (sl_addr[1:0] == 2'b00) begin
+                                            mem_ce <= 1;
+                                            mem_write <= 0;
+                                            mem_bytemode <= 5'b01111;
+                                        end
+                                        else begin
+                                            excode <= 5'h04; // AdEL
+                                        end
+                                    end
+                                    default: ;
+                                endcase
                             end
                             3'd3: begin // MFHI/LO
                                 status <= STATUS_FORCE_COMMIT;
@@ -464,7 +451,7 @@ always @(posedge clk) begin
                     end
                     else if (mem_tlbmiss) begin
                         tlb_exc <= 1;
-                        mem_BVA <= sl_addr;
+                        mem_vaddr <= sl_addr;
                         if (i_uop == 6'd0 || i_uop == 6'd1 || i_uop == 6'd2 ) begin
                             excode <= 5'h03;
                         end
@@ -481,8 +468,7 @@ always @(posedge clk) begin
                     end
                 end
                 else if (i_status == STATUS_MEM1) begin
-                    if (mem_avail) begin
-                        
+                    if (mem_avail) begin   
                         if (i_uop == 6'd0 || i_uop == 6'd1 || i_uop == 6'd2 ) begin
                             // Store
                             commit <= 1;
@@ -535,7 +521,7 @@ always @(posedge clk) begin
                         commit <= 0;     // 不提交
                         excode <= 5'h04;      // AdEL
                         normal_exc <= 1;
-                        mem_BVA <= cp0_result;
+                        mem_vaddr <= cp0_result;
                     end
                 end
                 else if (i_status == STATUS_FORCE_COMMIT) begin

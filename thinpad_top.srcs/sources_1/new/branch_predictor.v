@@ -22,6 +22,7 @@
 
 module branch_predictor(
     input  wire         clk,
+    input  wire         period0,
     input  wire         rst,
     input  wire         clear,
     
@@ -64,18 +65,25 @@ reg[31:0]   last_pred;
 
 
 always @(posedge clk) begin
-    if (rst) begin
-        valid <= 256'b0;
-        status <= STATUS_INIT_0;
-    end
-    else if (clear) begin
-        status <= STATUS_CLEAR;
-    end
-    else if (status == STATUS_INIT_0) begin
-        status <= STATUS_INIT_1;
+    if (!period0) begin
+        if (rst) begin
+            valid <= 256'b0;
+            status <= STATUS_INIT_0;
+        end
+        else if (clear) begin
+            status <= STATUS_CLEAR;
+        end
+        else if (status == STATUS_INIT_0) begin
+            status <= STATUS_INIT_1;
+        end
+        else begin
+            status <= STATUS_NORMAL;
+        end
+        last_pred <= pc_pred;
     end
     else begin
-        status <= STATUS_NORMAL;
+        status <= status;
+        last_pred <= last_pred;
     end
     
     if (feed_we) begin
@@ -87,8 +95,6 @@ always @(posedge clk) begin
             bp_line[feed_pc_index] <= { 1'b0, ~no_jump, feed_res[31:2], feed_pc_tag };
         end
     end
-    
-    last_pred <= pc_pred;
 end
 
 wire[7:0]       pc_index = pc[9:2];

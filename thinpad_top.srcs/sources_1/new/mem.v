@@ -21,7 +21,8 @@
 
 
 module mem(
-    input wire          clk_50M,
+    input wire          clk,
+    input wire          period0,
     input wire          rst,
 
     // Interface
@@ -125,7 +126,7 @@ assign dm9k_cs_n = 1;
 assign dm9k_pwrst_n = 1;
 
 /* ===================== Counter ==================== */
-parameter CPU_US_COUNT = 50;
+parameter CPU_US_COUNT = 30;
 reg[63:0]       cycle_counter;
 wire[31:0]      cycle_counter_lo;
 wire[31:0]      cycle_counter_hi;
@@ -142,7 +143,7 @@ wire[31:0]      inst_counter_lo;
 wire[31:0]      inst_counter_hi;
 assign inst_counter_lo = inst_counter[31:0];
 assign inst_counter_hi = inst_counter[63:32];
-always @(posedge clk_50M) begin
+always @(posedge clk) begin
     if (rst) begin
         cpu_ns_count <= 8'b1;
         cpu_us_counter <= 64'b0;
@@ -150,16 +151,23 @@ always @(posedge clk_50M) begin
         inst_counter <= 64'b0;
     end
     else begin
-        cycle_counter <= cycle_counter + 64'b1;
-        if (inst_commit) begin
-            inst_counter <= inst_counter + 64'b1;
-        end
-        if (cpu_ns_count == CPU_US_COUNT) begin
-            cpu_ns_count <= 8'b1;
-            cpu_us_counter <= cpu_us_counter + 64'b1;
+        if (period0) begin
+            cycle_counter <= cycle_counter + 64'b1;
+            if (inst_commit) begin
+                inst_counter <= inst_counter + 64'b1;
+            end
+            if (cpu_ns_count == CPU_US_COUNT) begin
+                cpu_ns_count <= 8'b1;
+                cpu_us_counter <= cpu_us_counter + 64'b1;
+            end
+            else begin
+                cpu_ns_count <= cpu_ns_count + 8'b1;
+            end
         end
         else begin
-            cpu_ns_count <= cpu_ns_count + 8'b1;
+             if (inst_commit) begin
+                inst_counter <= inst_counter + 64'b1;
+            end
         end
     end
     
@@ -311,7 +319,7 @@ assign rom_addr = o_rom_addr;
 assign  if_data = o_mem_req ? 32'b0 : output_data_n;
 assign  mem_data = o_mem_req ? output_data : 32'b0;
 assign  if_skip = o_mem_req;
-assign  mem_valid =  (o_cnt_req == 0) ? 1 : 0;
+assign  mem_valid =  (o_cnt_req == 0 && (!period0)) ? 1 : 0;
 
 /* =================== Assign =================== */
 
@@ -482,8 +490,36 @@ always @(*) begin
     
 end
 
-always @(posedge clk_50M) begin
-    if (!rst && (o_cnt_req == 0)) begin
+always @(posedge clk) begin
+    if (period0) begin  // keep
+        o_mem_req <= o_mem_req;
+        o_cnt_req <= o_cnt_req;
+        o_output_sel <= o_output_sel;
+        o_base_ram_addr <= o_base_ram_addr;
+        o_ext_ram_addr <= o_ext_ram_addr;
+        o_base_ram_data <= o_base_ram_data;
+        o_ext_ram_data <= o_ext_ram_data;
+        o_bytemode <= o_bytemode;
+        o_base_ram_ce_n <= o_base_ram_ce_n;
+        o_ext_ram_ce_n <= o_ext_ram_ce_n;
+        o_base_ram_oe_n <= o_base_ram_oe_n;
+        o_ext_ram_oe_n <= o_ext_ram_oe_n;
+        o_base_ram_we_n <= o_base_ram_we_n;
+        o_ext_ram_we_n <= o_ext_ram_we_n;
+        o_uart_data_read <= o_uart_data_read;
+        o_uart_data_write <= o_uart_data_write;
+        o_uart_data_out <= o_uart_data_out;
+        o_flash_a <= o_flash_a;
+        o_flash_d <= o_flash_d;
+        o_flash_ce_n <= o_flash_ce_n;
+        o_flash_oe_n <= o_flash_oe_n;
+        o_flash_we_n <= o_flash_we_n;
+        o_leds <= o_leds;
+        o_dpy_number <= o_dpy_number;
+        o_rom_ce <= o_rom_ce;
+        o_rom_addr <= o_rom_addr;
+    end
+    else if (!rst && (o_cnt_req == 0)) begin
         o_mem_req <= i_mem_req;
         o_cnt_req <= i_cnt_req;
         o_output_sel <= i_output_sel;

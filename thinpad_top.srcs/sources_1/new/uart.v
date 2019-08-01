@@ -21,7 +21,7 @@
 
 
 module uart(
-    input wire          clk_50M,           //50MHz 时钟输入
+    input wire          clk_100M,           //50MHz 时钟输入
     input wire          rst,
     
     //直连串口信号
@@ -36,6 +36,8 @@ module uart(
     input  wire[7:0]    uart_data_out,
     output wire         uart_busy
 );
+
+parameter CLK_FREQ = 60000000;
     
 //直连串口接收发送演示，从直连串口收到的数据再发送出去
 wire [7:0] ext_uart_rx;
@@ -46,9 +48,9 @@ reg [7:0]   uart_read_buffer;
 reg         read_buffer_ready;
 assign uart_data_ready = read_buffer_ready;
 
-async_receiver #(.ClkFrequency(50000000),.Baud(115200)) //接收模块，9600无检验位
+async_receiver #(.ClkFrequency(CLK_FREQ),.Baud(115200)) //接收模块，9600无检验位
     ext_uart_r(
-        .clk(clk_50M),                      //外部时钟信号
+        .clk(clk_100M),                      //外部时钟信号
         .RxD(rxd),                          //外部串行信号输入
         .RxD_data_ready(ext_uart_ready),    //数据接收到标志
         .RxD_clear(ex_uart_clear),          //清除接收标志
@@ -56,7 +58,7 @@ async_receiver #(.ClkFrequency(50000000),.Baud(115200)) //接收模块，9600无检验位
         .RxD_idle(),
         .RxD_endofpacket()
     );
-always @(posedge clk_50M) begin //将缓冲区ext_uart_buffer发送出去
+always @(posedge clk_100M) begin //将缓冲区ext_uart_buffer发送出去
     if (rst) begin
         ex_uart_clear <= 1;
         read_buffer_ready <= 0;
@@ -86,7 +88,7 @@ always @(*) begin
 end
 
 assign uart_busy = ext_uart_busy;
-always @(posedge clk_50M) begin //将缓冲区ext_uart_buffer发送出去
+always @(posedge clk_100M) begin //将缓冲区ext_uart_buffer发送出去
     if (uart_data_write && !ext_uart_busy) begin
         ext_uart_tx <= uart_data_out;
         ext_uart_start <= 1;
@@ -97,9 +99,9 @@ always @(posedge clk_50M) begin //将缓冲区ext_uart_buffer发送出去
 
 end
 
-async_transmitter #(.ClkFrequency(50000000),.Baud(115200)) //发送模块，9600无检验位
+async_transmitter #(.ClkFrequency(CLK_FREQ),.Baud(115200)) //发送模块，9600无检验位
     ext_uart_t(
-    .clk(clk_50M),                      //外部时钟信号
+    .clk(clk_100M),                      //外部时钟信号
     .TxD(txd),                          //串行信号输出
     .TxD_busy(ext_uart_busy),           //发送器忙状态指示
     .TxD_start(ext_uart_start),         //开始发送信号
