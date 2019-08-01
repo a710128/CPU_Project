@@ -126,7 +126,7 @@ assign dm9k_cs_n = 1;
 assign dm9k_pwrst_n = 1;
 
 /* ===================== Counter ==================== */
-localparam CPU_US_COUNT = CPU_FREQ;
+localparam CPU_US_COUNT = CPU_FREQ / 2;
 reg[63:0]       cycle_counter;
 wire[31:0]      cycle_counter_lo;
 wire[31:0]      cycle_counter_hi;
